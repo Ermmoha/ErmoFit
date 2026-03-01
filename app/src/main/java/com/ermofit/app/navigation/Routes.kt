@@ -10,6 +10,7 @@ object RootRoutes {
 object MainRoutes {
     const val Favorites = "favorites"
     const val Home = "home"
+    const val Exercises = "exercises"
     const val Profile = "profile"
     const val Search = "search"
     const val ProgramDetails = "program/{programId}"

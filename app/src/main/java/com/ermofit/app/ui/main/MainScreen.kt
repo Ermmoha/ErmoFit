@@ -3,6 +3,7 @@
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -23,6 +24,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,6 +37,7 @@ import com.ermofit.app.ui.i18n.AppStrings
 import com.ermofit.app.ui.i18n.appLanguage
 import com.ermofit.app.ui.exercise.ExerciseDetailsScreen
 import com.ermofit.app.ui.favorites.FavoritesScreen
+import com.ermofit.app.ui.exercises.ExercisesScreen
 import com.ermofit.app.ui.home.HomeScreen
 import com.ermofit.app.ui.i18n.appStrings
 import com.ermofit.app.ui.profile.ProfileScreen
@@ -50,11 +54,13 @@ fun MainScreen(
     val isRu = appLanguage().raw == "ru"
     val navController = rememberNavController()
     var homeSortSignal by rememberSaveable { mutableIntStateOf(0) }
+    var exercisesSortSignal by rememberSaveable { mutableIntStateOf(0) }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route.orEmpty()
     val isRootTab = route in setOf(
         MainRoutes.Favorites,
         MainRoutes.Home,
+        MainRoutes.Exercises,
         MainRoutes.Profile
     )
 
@@ -70,8 +76,16 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    if (route == MainRoutes.Home) {
-                        IconButton(onClick = { homeSortSignal += 1 }) {
+                    if (route == MainRoutes.Home || route == MainRoutes.Exercises) {
+                        IconButton(
+                            onClick = {
+                                if (route == MainRoutes.Home) {
+                                    homeSortSignal += 1
+                                } else {
+                                    exercisesSortSignal += 1
+                                }
+                            }
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Tune,
                                 contentDescription = if (isRu) "\u0424\u0438\u043b\u044c\u0442\u0440\u044b \u0438 \u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430" else "Filters and sorting"
@@ -117,7 +131,15 @@ fun MainScreen(
                             }
                         },
                         icon = { Icon(Icons.Default.Favorite, contentDescription = strings.tabFavorites) },
-                        label = { Text(strings.tabFavorites) }
+                        label = {
+                            Text(
+                                text = strings.tabFavorites,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 10.sp
+                            )
+                        }
                     )
                     NavigationBarItem(
                         selected = route == MainRoutes.Home,
@@ -129,7 +151,35 @@ fun MainScreen(
                             }
                         },
                         icon = { Icon(Icons.Default.Home, contentDescription = strings.tabHome) },
-                        label = { Text(strings.tabHome) }
+                        label = {
+                            Text(
+                                text = strings.tabHome,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 10.sp
+                            )
+                        }
+                    )
+                    NavigationBarItem(
+                        selected = route == MainRoutes.Exercises,
+                        onClick = {
+                            navController.navigate(MainRoutes.Exercises) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = { Icon(Icons.Default.FitnessCenter, contentDescription = strings.exercisesLabel) },
+                        label = {
+                            Text(
+                                text = strings.exercisesLabel,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 10.sp
+                            )
+                        }
                     )
                     NavigationBarItem(
                         selected = route == MainRoutes.Profile,
@@ -141,7 +191,15 @@ fun MainScreen(
                             }
                         },
                         icon = { Icon(Icons.Default.Person, contentDescription = strings.tabProfile) },
-                        label = { Text(strings.tabProfile) }
+                        label = {
+                            Text(
+                                text = strings.tabProfile,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 10.sp
+                            )
+                        }
                     )
                 }
             }
@@ -166,6 +224,12 @@ fun MainScreen(
             }
             composable(MainRoutes.Profile) {
                 ProfileScreen(onLoggedOut = onLogoutToWelcome)
+            }
+            composable(MainRoutes.Exercises) {
+                ExercisesScreen(
+                    sortDialogSignal = exercisesSortSignal,
+                    onExerciseClick = { navController.navigate(MainRoutes.exerciseDetails(it)) }
+                )
             }
             composable(MainRoutes.Search) {
                 SearchScreen(
@@ -203,6 +267,7 @@ private fun topBarTitle(route: String, strings: AppStrings): String {
         route == MainRoutes.Home -> strings.topHome
         route == MainRoutes.Favorites -> strings.topFavorites
         route == MainRoutes.Profile -> strings.topProfile
+        route == MainRoutes.Exercises -> strings.exercisesLabel
         route == MainRoutes.Search -> strings.topSearch
         route.startsWith("program/") -> strings.topProgramDetails
         route.startsWith("exercise/") -> strings.topExerciseDetails
