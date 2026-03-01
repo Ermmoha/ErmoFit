@@ -1,5 +1,9 @@
 ﻿package com.ermofit.app.ui.home
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -9,14 +13,22 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -31,9 +43,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ermofit.app.data.local.entity.CategoryEntity
@@ -42,6 +56,7 @@ import com.ermofit.app.ui.components.ProgramCard
 import com.ermofit.app.ui.components.ShimmerPlaceholder
 import com.ermofit.app.ui.i18n.appLanguage
 import com.ermofit.app.ui.i18n.appStrings
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -58,6 +73,7 @@ fun HomeScreen(
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsStateWithLifecycle()
     val selectedLevel by viewModel.selectedLevel.collectAsStateWithLifecycle()
     val selectedSort by viewModel.selectedSort.collectAsStateWithLifecycle()
+    val selectedMaxDuration by viewModel.selectedMaxDuration.collectAsStateWithLifecycle()
     val slogan by viewModel.slogan.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
@@ -143,13 +159,16 @@ fun HomeScreen(
             selectedCategoryId = selectedCategoryId,
             selectedLevel = selectedLevel,
             selectedSort = selectedSort,
+            selectedMaxDuration = selectedMaxDuration,
             onSelectCategory = viewModel::selectCategory,
             onSelectLevel = viewModel::selectLevel,
             onSelectSort = viewModel::selectSort,
+            onSelectMaxDuration = viewModel::selectMaxDuration,
             onReset = {
                 viewModel.selectCategory(null)
                 viewModel.selectLevel(HomeViewModel.LevelFilter.ALL)
                 viewModel.selectSort(HomeViewModel.SortOption.DEFAULT)
+                viewModel.selectMaxDuration(90)
             },
             onDismiss = { showSortDialog = false }
         )
@@ -166,6 +185,12 @@ private fun HomeProgramCardShimmer() {
     )
 }
 
+private enum class SortSection {
+    CATEGORY,
+    LEVEL,
+    SORT
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SortDialog(
@@ -174,12 +199,20 @@ private fun SortDialog(
     selectedCategoryId: String?,
     selectedLevel: HomeViewModel.LevelFilter,
     selectedSort: HomeViewModel.SortOption,
+    selectedMaxDuration: Int,
     onSelectCategory: (String?) -> Unit,
     onSelectLevel: (HomeViewModel.LevelFilter) -> Unit,
     onSelectSort: (HomeViewModel.SortOption) -> Unit,
+    onSelectMaxDuration: (Int) -> Unit,
     onReset: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    var expandedSection by rememberSaveable { mutableStateOf<SortSection?>(null) }
+    val configuration = LocalConfiguration.current
+    val maxDialogHeight = (configuration.screenHeightDp * 0.9f).dp
+    val dialogHorizontalPadding = if (configuration.screenWidthDp < 380) 8.dp else 12.dp
+    val scrollState = rememberScrollState()
+
     val categoryOptions = remember(categories, isRu) {
         buildList {
             add(
@@ -227,18 +260,37 @@ private fun SortDialog(
         )
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    val selectedCategoryLabel = categoryOptions.firstOrNull { it.first == selectedCategoryId }?.second
+        ?: categoryOptions.first().second
+    val selectedLevelLabel = levelOptions.firstOrNull { it.first == selectedLevel }?.second
+        ?: levelOptions.first().second
+    val selectedSortLabel = sortOptions.firstOrNull { it.first == selectedSort }?.second
+        ?: sortOptions.first().second
+    val durationSummary = if (isRu) {
+        "\u0414\u043e $selectedMaxDuration \u043c\u0438\u043d"
+    } else {
+        "Up to $selectedMaxDuration min"
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            shape = RoundedCornerShape(28.dp),
+                .padding(horizontal = dialogHorizontalPadding, vertical = 8.dp)
+                .widthIn(max = 560.dp)
+                .heightIn(max = maxDialogHeight),
+            shape = RoundedCornerShape(24.dp),
             tonalElevation = 4.dp,
-            shadowElevation = 12.dp
+            shadowElevation = 10.dp
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier
+                    .padding(16.dp)
+                    .verticalScroll(scrollState),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
                     text = if (isRu) {
@@ -246,66 +298,128 @@ private fun SortDialog(
                     } else {
                         "Filters and sorting"
                     },
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(
-                    text = if (isRu) "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438" else "Categories",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ExpandableSortBlock(
+                    title = if (isRu) "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438" else "Categories",
+                    summary = selectedCategoryLabel,
+                    expanded = expandedSection == SortSection.CATEGORY,
+                    onToggle = {
+                        expandedSection = if (expandedSection == SortSection.CATEGORY) {
+                            null
+                        } else {
+                            SortSection.CATEGORY
+                        }
+                    }
                 ) {
-                    categoryOptions.forEach { (id, label) ->
-                        FilterChip(
-                            selected = selectedCategoryId == id,
-                            onClick = { onSelectCategory(id) },
-                            label = { Text(label) }
-                        )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        categoryOptions.forEach { (id, label) ->
+                            FilterChip(
+                                selected = selectedCategoryId == id,
+                                onClick = { onSelectCategory(id) },
+                                label = { Text(label) }
+                            )
+                        }
                     }
                 }
 
-                Text(
-                    text = if (isRu) "\u0423\u0440\u043e\u0432\u0435\u043d\u044c" else "Level",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ExpandableSortBlock(
+                    title = if (isRu) "\u0423\u0440\u043e\u0432\u0435\u043d\u044c" else "Level",
+                    summary = selectedLevelLabel,
+                    expanded = expandedSection == SortSection.LEVEL,
+                    onToggle = {
+                        expandedSection = if (expandedSection == SortSection.LEVEL) {
+                            null
+                        } else {
+                            SortSection.LEVEL
+                        }
+                    }
                 ) {
-                    levelOptions.forEach { (value, label) ->
-                        FilterChip(
-                            selected = selectedLevel == value,
-                            onClick = { onSelectLevel(value) },
-                            label = { Text(label) }
-                        )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        levelOptions.forEach { (value, label) ->
+                            FilterChip(
+                                selected = selectedLevel == value,
+                                onClick = { onSelectLevel(value) },
+                                label = { Text(label) }
+                            )
+                        }
                     }
                 }
 
-                Text(
-                    text = if (isRu) "\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430" else "Sorting",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ExpandableSortBlock(
+                    title = if (isRu) "\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430" else "Sorting",
+                    summary = selectedSortLabel,
+                    expanded = expandedSection == SortSection.SORT,
+                    onToggle = {
+                        expandedSection = if (expandedSection == SortSection.SORT) {
+                            null
+                        } else {
+                            SortSection.SORT
+                        }
+                    }
                 ) {
-                    sortOptions.forEach { (value, label) ->
-                        FilterChip(
-                            selected = selectedSort == value,
-                            onClick = { onSelectSort(value) },
-                            label = { Text(label) }
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        sortOptions.forEach { (value, label) ->
+                            FilterChip(
+                                selected = selectedSort == value,
+                                onClick = { onSelectSort(value) },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = if (isRu) "\u0412\u0440\u0435\u043c\u044f" else "Duration",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        val sliderMin = 30f
+                        val sliderMax = 90f
+                        Slider(
+                            value = selectedMaxDuration.toFloat(),
+                            onValueChange = { raw ->
+                                val snapped = (((raw - sliderMin) / 5f).roundToInt() * 5 + 30)
+                                    .coerceIn(30, 90)
+                                onSelectMaxDuration(snapped)
+                            },
+                            valueRange = sliderMin..sliderMax,
+                            steps = 11
+                        )
+                        Text(
+                            text = durationSummary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onReset) {
@@ -317,6 +431,66 @@ private fun SortDialog(
                     ) {
                         Text(if (isRu) "\u0413\u043e\u0442\u043e\u0432\u043e" else "Done")
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpandableSortBlock(
+    title: String,
+    summary: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onToggle
+                )
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (expanded) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    content()
                 }
             }
         }

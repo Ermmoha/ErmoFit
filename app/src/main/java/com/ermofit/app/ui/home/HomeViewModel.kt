@@ -43,6 +43,9 @@ class HomeViewModel @Inject constructor(
     private val _selectedSort = MutableStateFlow(SortOption.DEFAULT)
     val selectedSort: StateFlow<SortOption> = _selectedSort.asStateFlow()
 
+    private val _selectedMaxDuration = MutableStateFlow(DEFAULT_MAX_DURATION_MINUTES)
+    val selectedMaxDuration: StateFlow<Int> = _selectedMaxDuration.asStateFlow()
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -74,12 +77,14 @@ class HomeViewModel @Inject constructor(
         baseProgramsFlow,
         _selectedCategoryId,
         _selectedLevel,
-        _selectedSort
-    ) { programs, selectedCategoryId, selectedLevel, selectedSort ->
+        _selectedSort,
+        _selectedMaxDuration
+    ) { programs, selectedCategoryId, selectedLevel, selectedSort, selectedMaxDuration ->
         val filtered = programs.filter { program ->
             val byCategory = selectedCategoryId == null || program.categoryId == selectedCategoryId
             val byLevel = selectedLevel.matches(program.level)
-            byCategory && byLevel
+            val byDuration = program.durationMinutes <= selectedMaxDuration
+            byCategory && byLevel && byDuration
         }
         selectedSort.apply(filtered)
     }
@@ -137,6 +142,10 @@ class HomeViewModel @Inject constructor(
         _selectedSort.value = sortOption
     }
 
+    fun selectMaxDuration(minutes: Int) {
+        _selectedMaxDuration.value = minutes.coerceIn(MIN_DURATION_MINUTES, DEFAULT_MAX_DURATION_MINUTES)
+    }
+
     fun clearError() {
         _error.value = null
     }
@@ -192,6 +201,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private companion object {
+        const val MIN_DURATION_MINUTES = 30
+        const val DEFAULT_MAX_DURATION_MINUTES = 90
         val ruSlogans = listOf(
             "Тренируйся стабильно и фиксируй прогресс.",
             "Сильное тело строится повторяемыми привычками.",
