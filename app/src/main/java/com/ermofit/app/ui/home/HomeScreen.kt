@@ -79,6 +79,7 @@ fun HomeScreen(
     val error by viewModel.error.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showSortDialog by rememberSaveable { mutableStateOf(false) }
+    var handledSortDialogSignal by rememberSaveable { mutableStateOf(sortDialogSignal) }
 
     LaunchedEffect(error) {
         error?.let { message ->
@@ -88,8 +89,9 @@ fun HomeScreen(
     }
 
     LaunchedEffect(sortDialogSignal) {
-        if (sortDialogSignal > 0) {
+        if (sortDialogSignal > handledSortDialogSignal) {
             showSortDialog = true
+            handledSortDialogSignal = sortDialogSignal
         }
     }
 

@@ -6,13 +6,16 @@ import com.ermofit.app.data.datastore.UserPreferencesManager
 import com.ermofit.app.data.model.AppLanguage
 import com.ermofit.app.data.model.AppThemeMode
 import com.ermofit.app.data.repository.AuthRepository
+import com.ermofit.app.data.repository.SeedRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class ProfileUiState(
     val uid: String? = null,
@@ -31,7 +34,8 @@ data class ProfileUiState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val preferencesManager: UserPreferencesManager
+    private val preferencesManager: UserPreferencesManager,
+    private val seedRepository: SeedRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -156,6 +160,11 @@ class ProfileViewModel @Inject constructor(
     fun setLanguage(language: AppLanguage) {
         viewModelScope.launch {
             preferencesManager.setLanguage(language)
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    seedRepository.ensureSeedLoaded()
+                }
+            }
         }
     }
 
