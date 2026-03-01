@@ -33,6 +33,7 @@ class UserPreferencesManager @Inject constructor(
         val appThemeMode = stringPreferencesKey("app_theme_mode")
         val appLanguage = stringPreferencesKey("app_language")
         val showOnlyWithTranslation = booleanPreferencesKey("show_only_with_translation")
+        val showWorkoutIconsHelp = booleanPreferencesKey("show_workout_icons_help")
     }
 
     val seedVersionFlow: Flow<Int> = context.dataStore.data.map { prefs ->
@@ -57,6 +58,10 @@ class UserPreferencesManager @Inject constructor(
 
     fun observeShowOnlyWithTranslation(): Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[Keys.showOnlyWithTranslation] ?: false
+    }
+
+    fun observeShowWorkoutIconsHelp(): Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[Keys.showWorkoutIconsHelp] ?: true
     }
 
     suspend fun setSeedVersion(version: Int) {
@@ -110,6 +115,12 @@ class UserPreferencesManager @Inject constructor(
     suspend fun setShowOnlyWithTranslation(value: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[Keys.showOnlyWithTranslation] = value
+        }
+    }
+
+    suspend fun setShowWorkoutIconsHelp(value: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.showWorkoutIconsHelp] = value
         }
     }
 

@@ -57,6 +57,7 @@ fun MainScreen(
     var exercisesSortSignal by rememberSaveable { mutableIntStateOf(0) }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route.orEmpty()
+    val isWorkoutRoute = route.startsWith("workout/")
     val isRootTab = route in setOf(
         MainRoutes.Favorites,
         MainRoutes.Home,
@@ -66,57 +67,59 @@ fun MainScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(topBarTitle(route, strings)) },
-                navigationIcon = {
-                    if (!isRootTab) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = strings.navBackAction)
-                        }
-                    }
-                },
-                actions = {
-                    if (route == MainRoutes.Home || route == MainRoutes.Exercises) {
-                        IconButton(
-                            onClick = {
-                                if (route == MainRoutes.Home) {
-                                    homeSortSignal += 1
-                                } else {
-                                    exercisesSortSignal += 1
-                                }
+            if (!isWorkoutRoute) {
+                CenterAlignedTopAppBar(
+                    title = { Text(topBarTitle(route, strings)) },
+                    navigationIcon = {
+                        if (!isRootTab) {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = strings.navBackAction)
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Tune,
-                                contentDescription = if (isRu) "\u0424\u0438\u043b\u044c\u0442\u0440\u044b \u0438 \u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430" else "Filters and sorting"
-                            )
                         }
-                        IconButton(
-                            onClick = {
-                                navController.navigate(MainRoutes.Search) {
-                                    launchSingleTop = true
+                    },
+                    actions = {
+                        if (route == MainRoutes.Home || route == MainRoutes.Exercises) {
+                            IconButton(
+                                onClick = {
+                                    if (route == MainRoutes.Home) {
+                                        homeSortSignal += 1
+                                    } else {
+                                        exercisesSortSignal += 1
+                                    }
                                 }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Tune,
+                                    contentDescription = if (isRu) "\u0424\u0438\u043b\u044c\u0442\u0440\u044b \u0438 \u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430" else "Filters and sorting"
+                                )
                             }
-                        ) {
-                            Icon(Icons.Default.Search, contentDescription = strings.navSearchAction)
-                        }
-                    } else if (isRootTab) {
-                        IconButton(
-                            onClick = {
-                                navController.navigate(MainRoutes.Search) {
-                                    launchSingleTop = true
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(MainRoutes.Search) {
+                                        launchSingleTop = true
+                                    }
                                 }
+                            ) {
+                                Icon(Icons.Default.Search, contentDescription = strings.navSearchAction)
                             }
-                        ) {
-                            Icon(Icons.Default.Search, contentDescription = strings.navSearchAction)
+                        } else if (isRootTab) {
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(MainRoutes.Search) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Search, contentDescription = strings.navSearchAction)
+                            }
                         }
-                    }
-                },
-                colors = androidx.compose.material3.TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                    },
+                    colors = androidx.compose.material3.TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
-            )
+            }
         },
         bottomBar = {
             if (isRootTab) {
@@ -256,7 +259,10 @@ fun MainScreen(
                 route = MainRoutes.WorkoutPlayer,
                 arguments = listOf(navArgument("programId") { type = NavType.StringType })
             ) {
-                WorkoutPlayerScreen(onFinish = { navController.popBackStack() })
+                WorkoutPlayerScreen(
+                    onBack = { navController.popBackStack() },
+                    onFinish = { navController.popBackStack() }
+                )
             }
         }
     }

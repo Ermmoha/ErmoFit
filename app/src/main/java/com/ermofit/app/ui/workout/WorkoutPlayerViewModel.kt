@@ -3,7 +3,9 @@ package com.ermofit.app.ui.workout
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ermofit.app.data.datastore.UserPreferencesManager
 import com.ermofit.app.data.local.relation.ProgramExerciseWithDetails
+import com.ermofit.app.data.repository.FavoritesRepository
 import com.ermofit.app.data.repository.LocalDataRepository
 import com.ermofit.app.domain.model.ResolvedExerciseText
 import com.ermofit.app.domain.usecase.ExerciseTextResolver
@@ -23,11 +25,14 @@ data class WorkoutPlayerUiState(
     val programTitle: String = "",
     val exercises: List<ProgramExerciseWithDetails> = emptyList(),
     val exerciseTexts: Map<String, ResolvedExerciseText> = emptyMap(),
+    val favoriteExerciseIds: Set<String> = emptySet(),
     val currentIndex: Int = 0,
     val isRunning: Boolean = false,
     val mainTimerSecondsLeft: Int = 0,
     val repsRestSecondsLeft: Int = 0,
     val transitionRestSecondsLeft: Int = 0,
+    val showIconsHelpDialog: Boolean = false,
+    val showNeverAgainInIconsHelp: Boolean = true,
     val isFinished: Boolean = false
 )
 
@@ -35,6 +40,8 @@ data class WorkoutPlayerUiState(
 class WorkoutPlayerViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val localDataRepository: LocalDataRepository,
+    private val favoritesRepository: FavoritesRepository,
+    private val preferencesManager: UserPreferencesManager,
     exerciseTextResolver: ExerciseTextResolver,
     programTextResolver: ProgramTextResolver
 ) : ViewModel() {
@@ -94,6 +101,21 @@ class WorkoutPlayerViewModel @Inject constructor(
                     _uiState.updateAndPersist { it.copy(exerciseTexts = texts) }
                 }
         }
+        viewModelScope.launch {
+            favoritesRepository.observeFavoriteExerciseIds().collect { ids ->
+                _uiState.update { it.copy(favoriteExerciseIds = ids.toSet()) }
+            }
+        }
+        viewModelScope.launch {
+            preferencesManager.observeShowWorkoutIconsHelp().collect { shouldShow ->
+                _uiState.update { state ->
+                    state.copy(
+                        showIconsHelpDialog = shouldShow && !state.isFinished,
+                        showNeverAgainInIconsHelp = shouldShow
+                    )
+                }
+            }
+        }
     }
 
     fun startPause() {
@@ -148,6 +170,40 @@ class WorkoutPlayerViewModel @Inject constructor(
         val nextIndex = _uiState.value.currentIndex + 1
         _uiState.updateAndPersist { it.copy(transitionRestSecondsLeft = 0) }
         moveToIndex(nextIndex)
+    }
+
+    fun toggleCurrentExerciseFavorite() {
+        val exerciseId = currentExercise(_uiState.value)?.exerciseId ?: return
+        viewModelScope.launch {
+            runCatching {
+                favoritesRepository.toggleFavoriteExercise(exerciseId)
+            }
+        }
+    }
+
+    fun openIconsHelpDialog() {
+        _uiState.update {
+            it.copy(
+                showIconsHelpDialog = true,
+                showNeverAgainInIconsHelp = false
+            )
+        }
+    }
+
+    fun dismissIconsHelpDialog() {
+        _uiState.update { it.copy(showIconsHelpDialog = false) }
+    }
+
+    fun disableIconsHelpDialog() {
+        viewModelScope.launch {
+            preferencesManager.setShowWorkoutIconsHelp(false)
+        }
+        _uiState.update {
+            it.copy(
+                showIconsHelpDialog = false,
+                showNeverAgainInIconsHelp = false
+            )
+        }
     }
 
     private fun moveToIndex(index: Int) {
