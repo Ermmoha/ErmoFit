@@ -82,10 +82,7 @@ fun ProgramCard(
                         .height(214.dp),
                     contentScale = ContentScale.Crop,
                     loading = {
-                        FallbackProgramImage(
-                            seed = program.id,
-                            title = title
-                        )
+                        ProgramImageLoadingShimmer()
                     },
                     error = {
                         FallbackProgramImage(
@@ -162,6 +159,15 @@ fun ProgramCard(
             }
         }
     }
+}
+
+@Composable
+private fun ProgramImageLoadingShimmer() {
+    ShimmerPlaceholder(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(214.dp)
+    )
 }
 
 private fun localizedLevel(rawLevel: String, isRu: Boolean): String {

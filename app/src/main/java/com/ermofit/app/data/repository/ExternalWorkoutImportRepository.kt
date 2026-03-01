@@ -78,7 +78,6 @@ class ExternalWorkoutImportRepository @Inject constructor(
     private fun buildImportBundle(preferredLangCode: String): ImportBundle {
         val ruRows = readExercises(RU_ASSET)
         val enRows = readExercises(EN_ASSET)
-        val seedProgramImages = readSeedProgramBackgrounds(ERMOFIT_SEED_ASSET)
         require(ruRows.isNotEmpty() || enRows.isNotEmpty()) {
             "bd_ru.json / bd_en.json are empty or unavailable."
         }
@@ -257,13 +256,9 @@ class ExternalWorkoutImportRepository @Inject constructor(
                 if (selected.size < MIN_EXERCISES_PER_PROGRAM) continue
 
                 val programId = "file_prog_${category.id}_${(index + 1).toString().padStart(2, '0')}"
-                val seedImage = seedProgramImages.getOrNull(
-                    positiveIndex(index + category.id.hashCode(), seedProgramImages.size)
-                ).orEmpty()
-                val backgroundImage = seedImage.ifBlank {
-                    selected.firstNotNullOfOrNull { it.fallbackImageUrl?.takeIf(String::isNotBlank) }
-                        ?: category.imageUrl.orEmpty()
-                }
+                val backgroundImage = selected.firstOrNull { it.mediaUrl.isNotBlank() }?.mediaUrl
+                    ?: selected.firstNotNullOfOrNull { it.fallbackImageUrl?.takeIf(String::isNotBlank) }
+                    ?: category.imageUrl.orEmpty()
 
                 val durationMinutes = estimateProgramDuration(
                     levelRank = rank,
@@ -723,7 +718,7 @@ class ExternalWorkoutImportRepository @Inject constructor(
         const val RU_ASSET = "bd_ru.json"
         const val EN_ASSET = "bd_en.json"
         const val ERMOFIT_SEED_ASSET = "ermofit_seed.json"
-        const val BASE_IMPORT_VERSION = 34
+        const val BASE_IMPORT_VERSION = 35
         const val MIN_EXERCISES_PER_PROGRAM = 4
         const val MIN_PROGRAMS_PER_CATEGORY = 4
         const val MAX_PROGRAMS_PER_CATEGORY = 18

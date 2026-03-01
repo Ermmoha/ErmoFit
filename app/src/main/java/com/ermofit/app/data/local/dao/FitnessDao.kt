@@ -270,7 +270,13 @@ interface FitnessDao {
           AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
           AND (
             COALESCE(NULLIF(tp.title, ''), NULLIF(tf.title, ''), p.title) LIKE '%' || :query || '%'
-            OR COALESCE(NULLIF(tp.description, ''), NULLIF(tf.description, ''), p.description) LIKE '%' || :query || '%'
+            OR EXISTS (
+                SELECT 1
+                FROM program_exercises pe2
+                INNER JOIN exercises e2 ON e2.id = pe2.exerciseId
+                WHERE pe2.programId = p.id
+                  AND e2.tags LIKE '%' || :query || '%'
+            )
           )
         ORDER BY COALESCE(NULLIF(tp.title, ''), NULLIF(tf.title, ''), p.title) ASC
         """
@@ -294,7 +300,6 @@ interface FitnessDao {
           AND (
             e.tags LIKE '%' || :query || '%'
             OR COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) LIKE '%' || :query || '%'
-            OR COALESCE(NULLIF(tp.description, ''), NULLIF(tf.description, ''), e.description) LIKE '%' || :query || '%'
           )
         ORDER BY COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) ASC
         """
@@ -319,7 +324,6 @@ interface FitnessDao {
           AND (
             e.tags LIKE '%' || :query || '%'
             OR COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) LIKE '%' || :query || '%'
-            OR COALESCE(NULLIF(tp.description, ''), NULLIF(tf.description, ''), e.description) LIKE '%' || :query || '%'
           )
         ORDER BY COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) ASC
         """

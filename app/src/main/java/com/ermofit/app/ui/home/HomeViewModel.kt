@@ -46,6 +46,9 @@ class HomeViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val settingsFlow = combine(
         exerciseTextResolver.observePreferredLangCode(),
         exerciseTextResolver.observeOnlyWithTranslation()
@@ -109,6 +112,7 @@ class HomeViewModel @Inject constructor(
             }.onFailure { throwable ->
                 _error.value = throwable.message.orEmpty()
             }
+            _isLoading.value = false
         }
         viewModelScope.launch {
             settingsFlow.collect { settings ->

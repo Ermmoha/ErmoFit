@@ -64,8 +64,7 @@ private fun ExerciseImage(
             }
         },
         loading = {
-            FallbackExerciseImage(
-                seed = stableKey,
+            ShimmerPlaceholder(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)

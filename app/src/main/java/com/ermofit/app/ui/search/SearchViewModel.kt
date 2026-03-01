@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 
 data class SearchUiState(
     val query: String = "",
+    val searchTarget: SearchTarget = SearchTarget.PROGRAMS,
     val programs: List<ProgramEntity> = emptyList(),
     val programTexts: Map<String, ResolvedProgramText> = emptyMap(),
     val exercises: List<ExerciseEntity> = emptyList(),
@@ -37,10 +38,16 @@ data class SearchUiState(
 
 private data class SearchCoreState(
     val query: String,
+    val searchTarget: SearchTarget,
     val programs: List<ProgramEntity>,
     val programTexts: Map<String, ResolvedProgramText>,
     val exercises: List<ExerciseEntity>
 )
+
+enum class SearchTarget {
+    PROGRAMS,
+    EXERCISES
+}
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
@@ -52,6 +59,7 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
+    private val _searchTarget = MutableStateFlow(SearchTarget.PROGRAMS)
     private val _error = MutableStateFlow<String?>(null)
 
     private val settingsFlow = combine(
@@ -67,8 +75,11 @@ class SearchViewModel @Inject constructor(
         .combine(settingsFlow) { query, settings ->
             query.trim() to settings
         }
-        .flatMapLatest { (clean, settings) ->
-            if (clean.isBlank()) {
+        .combine(_searchTarget) { pair, target ->
+            Triple(pair.first, pair.second, target)
+        }
+        .flatMapLatest { (clean, settings, target) ->
+            if (clean.isBlank() || target != SearchTarget.PROGRAMS) {
                 flowOf(emptyList())
             } else {
                 localDataRepository.searchPrograms(
@@ -85,8 +96,11 @@ class SearchViewModel @Inject constructor(
         .combine(settingsFlow) { query, settings ->
             query.trim() to settings
         }
-        .flatMapLatest { (clean, settings) ->
-            if (clean.isBlank()) {
+        .combine(_searchTarget) { pair, target ->
+            Triple(pair.first, pair.second, target)
+        }
+        .flatMapLatest { (clean, settings, target) ->
+            if (clean.isBlank() || target != SearchTarget.EXERCISES) {
                 flowOf(emptyList())
             } else {
                 localDataRepository.searchExercisesLocalized(
@@ -103,12 +117,14 @@ class SearchViewModel @Inject constructor(
 
     private val coreBaseFlow = combine(
         _query,
+        _searchTarget,
         programsFlow,
         programTextsFlow,
         exercisesFlow
-    ) { query, programs, programTexts, exercises ->
+    ) { query, target, programs, programTexts, exercises ->
         SearchCoreState(
             query = query,
+            searchTarget = target,
             programs = programs,
             programTexts = programTexts,
             exercises = exercises
@@ -121,6 +137,7 @@ class SearchViewModel @Inject constructor(
     ) { core, exerciseTexts ->
         SearchUiState(
             query = core.query,
+            searchTarget = core.searchTarget,
             programs = core.programs,
             programTexts = core.programTexts,
             exercises = core.exercises,
@@ -146,6 +163,10 @@ class SearchViewModel @Inject constructor(
 
     fun onQueryChanged(query: String) {
         _query.update { query }
+    }
+
+    fun selectTarget(target: SearchTarget) {
+        _searchTarget.value = target
     }
 
     fun submitQuery() {

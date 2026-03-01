@@ -3,9 +3,12 @@ package com.ermofit.app.ui.program
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
@@ -16,12 +19,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ermofit.app.ui.components.ExerciseProgramCard
 import com.ermofit.app.ui.components.ProgramCard
+import com.ermofit.app.ui.components.ShimmerPlaceholder
 import com.ermofit.app.ui.i18n.appLanguage
 import com.ermofit.app.ui.i18n.appStrings
 
@@ -44,7 +49,7 @@ fun ProgramDetailsScreen(
     }
 
     if (uiState.isLoading) {
-        Text(text = strings.preparingData, modifier = Modifier.padding(16.dp))
+        ProgramDetailsShimmer()
         return
     }
 
@@ -108,6 +113,72 @@ fun ProgramDetailsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ProgramDetailsShimmer() {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            ShimmerBlock(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(214.dp)
+                    .clip(RoundedCornerShape(18.dp))
+            )
+        }
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ShimmerBlock(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(26.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                ShimmerBlock(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                ShimmerBlock(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                ShimmerBlock(
+                    modifier = Modifier
+                        .fillMaxWidth(0.55f)
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                )
+                ShimmerBlock(
+                    modifier = Modifier
+                        .fillMaxWidth(0.55f)
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                )
+            }
+        }
+        items(3) {
+            ShimmerBlock(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(96.dp)
+                    .clip(RoundedCornerShape(14.dp))
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShimmerBlock(modifier: Modifier) {
+    ShimmerPlaceholder(modifier = modifier)
 }
 
 private fun localizedLevel(rawLevel: String, isRu: Boolean): String {

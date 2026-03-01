@@ -1,4 +1,4 @@
-package com.ermofit.app.ui.main
+﻿package com.ermofit.app.ui.main
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,6 +18,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
@@ -27,6 +31,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ermofit.app.navigation.MainRoutes
 import com.ermofit.app.ui.i18n.AppStrings
+import com.ermofit.app.ui.i18n.appLanguage
 import com.ermofit.app.ui.exercise.ExerciseDetailsScreen
 import com.ermofit.app.ui.favorites.FavoritesScreen
 import com.ermofit.app.ui.home.HomeScreen
@@ -42,7 +47,9 @@ fun MainScreen(
     onLogoutToWelcome: () -> Unit
 ) {
     val strings = appStrings()
+    val isRu = appLanguage().raw == "ru"
     val navController = rememberNavController()
+    var homeSortSignal by rememberSaveable { mutableIntStateOf(0) }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route.orEmpty()
     val isRootTab = route in setOf(
@@ -63,7 +70,23 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    if (route == MainRoutes.Home || isRootTab) {
+                    if (route == MainRoutes.Home) {
+                        IconButton(onClick = { homeSortSignal += 1 }) {
+                            Icon(
+                                imageVector = Icons.Default.Tune,
+                                contentDescription = if (isRu) "\u0424\u0438\u043b\u044c\u0442\u0440\u044b \u0438 \u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430" else "Filters and sorting"
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                navController.navigate(MainRoutes.Search) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.Search, contentDescription = strings.navSearchAction)
+                        }
+                    } else if (isRootTab) {
                         IconButton(
                             onClick = {
                                 navController.navigate(MainRoutes.Search) {
@@ -131,6 +154,7 @@ fun MainScreen(
         ) {
             composable(MainRoutes.Home) {
                 HomeScreen(
+                    sortDialogSignal = homeSortSignal,
                     onProgramClick = { navController.navigate(MainRoutes.programDetails(it)) }
                 )
             }
@@ -186,3 +210,5 @@ private fun topBarTitle(route: String, strings: AppStrings): String {
         else -> strings.appName
     }
 }
+
+
