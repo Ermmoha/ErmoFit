@@ -1,0 +1,53 @@
+Ты — senior Android developer (Kotlin, Jetpack Compose, Room, Hilt, Coroutines/Flow).
+У меня есть два JSON файла с упражнениями:
+- /mnt/data/bd_en.json
+- /mnt/data/bd_ru.json
+
+В каждом объекте есть поля типа:
+id, name, force, level, mechanic, equipment, primaryMuscles[], secondaryMuscles[], instructions[], category, images[].
+Поле images содержит относительные пути вроде "Decline_Reverse_Crunch/0.jpg".
+
+Сделай в проекте Android (Compose + Material 3, single-activity, Navigation Compose, MVVM, Repository):
+1) Положи данные в assets:
+   - app/src/main/assets/db/bd_en.json
+   - app/src/main/assets/db/bd_ru.json
+   - картинки в app/src/main/assets/exercise_images/<path_from_json>
+     (например app/src/main/assets/exercise_images/Decline_Reverse_Crunch/0.jpg)
+
+2) Реализуй парсинг JSON через kotlinx.serialization (Json { ignoreUnknownKeys = true }):
+   - DTO ExerciseDto, чтобы корректно распарсить оба файла.
+
+3) Импортируй данные в Room (однократно при первом запуске):
+   - Таблица exercises: id (PK), force, level, mechanic, equipment, category, primaryMuscles, secondaryMuscles, images
+     (списки храни через TypeConverters как JSON string)
+   - Таблица exercise_translations: (exerciseId FK, lang, name, instructionsJson)
+     где lang = "ru" или "en"
+   - Импорт: читаешь оба JSON, мёрджишь по id, вставляешь базовую запись exercises + 2 перевода (ru/en).
+
+4) DataStore Preferences:
+   - ключ language = "ru"/"en" (по умолчанию "ru")
+   - репозиторий/UseCase: getExercises(lang) возвращает Flow<List<ExerciseUi>>
+     где ExerciseUi содержит локализованные name/instructions по текущему языку.
+
+5) UI:
+   - Экран списка упражнений (LazyColumn) с названием и миниатюрой (первое изображение из images).
+   - Экран деталей: название, список инструкций, карусель/пейджер картинок (все images).
+   - Загрузка картинок из assets через Coil:
+     model = "file:///android_asset/exercise_images/$imagePath"
+   - Если картинок нет — показывай placeholder.
+
+6) Hilt:
+   - провайдеры Room DB, DAO, DataSource (assets reader), Repository, DataStore.
+
+7) В конце дай полный набор файлов/кода:
+   - build.gradle зависимости (serialization + coil-compose)
+   - DTO + TypeConverters
+   - Entity + Dao + Database
+   - AssetsDataSource (читает JSON из assets)
+   - Repository (ensureImported() + flows)
+   - DataStore wrapper
+   - ViewModel(ы)
+   - Compose экраны + навигация
+
+Важно: никаких внешних API. Всё должно работать оффлайн.
+Сделай код максимально готовым к вставке в проект.

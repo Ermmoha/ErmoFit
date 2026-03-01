@@ -1,0 +1,993 @@
+﻿{
+    "seedVersion":  5,
+    "categories":  [
+                       {
+                           "id":  "cat_strength",
+                           "title":  "Strength",
+                           "imageUrl":  "https://upload.wikimedia.org/wikipedia/commons/3/32/Pushing_a_sled.jpg"
+                       },
+                       {
+                           "id":  "cat_cardio",
+                           "title":  "Cardio",
+                           "imageUrl":  "https://upload.wikimedia.org/wikipedia/commons/1/17/Running_track_oval.jpg"
+                       },
+                       {
+                           "id":  "cat_mobility",
+                           "title":  "Mobility",
+                           "imageUrl":  "https://upload.wikimedia.org/wikipedia/commons/a/a5/Yoga_class.jpg"
+                       },
+                       {
+                           "id":  "cat_core",
+                           "title":  "Core",
+                           "imageUrl":  "https://upload.wikimedia.org/wikipedia/commons/0/02/Fitness-ball-exercise.jpg"
+                       },
+                       {
+                           "id":  "cat_hiit",
+                           "title":  "HIIT",
+                           "imageUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/53/Fitness_center.jpg"
+                       },
+                       {
+                           "id":  "cat_yoga",
+                           "title":  "Yoga",
+                           "imageUrl":  "https://upload.wikimedia.org/wikipedia/commons/c/cb/Yoga_pose.jpg"
+                       }
+                   ],
+    "exercises":  [
+                      {
+                          "id":  "ex_pushup_standard",
+                          "title":  "Push-Up Standard",
+                          "description":  "Hands under shoulders, body in one line, full controlled range.",
+                          "muscleGroup":  "Chest",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "push",
+                                       "upper body",
+                                       "strength"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/55/Push-up_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_pushup_incline",
+                          "title":  "Incline Push-Up",
+                          "description":  "Use an elevated surface to keep clean mechanics and shoulder comfort.",
+                          "muscleGroup":  "Chest",
+                          "equipment":  "Bench",
+                          "tags":  [
+                                       "push",
+                                       "beginner",
+                                       "upper body"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/a/a4/Air_squat_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_squat_air",
+                          "title":  "Air Squat",
+                          "description":  "Sit back and down, keep knees tracking over toes, stand with control.",
+                          "muscleGroup":  "Legs",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "legs",
+                                       "squat",
+                                       "strength"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/b/bb/Lunge_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_lunge_reverse",
+                          "title":  "Reverse Lunge",
+                          "description":  "Step back softly and keep torso upright while driving through front heel.",
+                          "muscleGroup":  "Legs",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "legs",
+                                       "glutes",
+                                       "balance"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/1/15/Pull-ups_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_jumping_jacks",
+                          "title":  "Jumping Jacks",
+                          "description":  "Maintain rhythm and soft landings while keeping shoulders relaxed.",
+                          "muscleGroup":  "Full body",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "cardio",
+                                       "warm-up",
+                                       "coordination"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/2/26/Bench_press_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_mountain_climbers",
+                          "title":  "Mountain Climbers",
+                          "description":  "Drive knees forward quickly from a solid plank position.",
+                          "muscleGroup":  "Core",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "core",
+                                       "cardio",
+                                       "conditioning"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/55/Push-up_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_glute_bridge",
+                          "title":  "Glute Bridge",
+                          "description":  "Press through heels and squeeze glutes at the top without arching lower back.",
+                          "muscleGroup":  "Glutes",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "glutes",
+                                       "posterior chain",
+                                       "activation"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/a/a4/Air_squat_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_low_plank",
+                          "title":  "Low Plank",
+                          "description":  "Elbows under shoulders, neck neutral, abs braced.",
+                          "muscleGroup":  "Core",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "core",
+                                       "isometric",
+                                       "stability"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/b/bb/Lunge_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_plank_hold",
+                          "title":  "Plank Hold",
+                          "description":  "Focus on steady breathing and strong shoulder positioning.",
+                          "muscleGroup":  "Core",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "core",
+                                       "hold",
+                                       "posture"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/1/15/Pull-ups_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_skipping_rope",
+                          "title":  "Skipping Rope",
+                          "description":  "Light on feet, keep wrists relaxed and maintain consistent cadence.",
+                          "muscleGroup":  "Cardio",
+                          "equipment":  "Jump rope",
+                          "tags":  [
+                                       "cardio",
+                                       "agility",
+                                       "endurance"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/2/26/Bench_press_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_squat_pulse",
+                          "title":  "Squat Pulse",
+                          "description":  "Stay low and pulse in a controlled range to increase time under tension.",
+                          "muscleGroup":  "Legs",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "legs",
+                                       "burn",
+                                       "endurance"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/55/Push-up_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_lateral_lunge",
+                          "title":  "Lateral Lunge",
+                          "description":  "Step wide, sit into one hip, and keep the opposite leg straight.",
+                          "muscleGroup":  "Legs",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "mobility",
+                                       "adductors",
+                                       "legs"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/a/a4/Air_squat_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_yoga_flow",
+                          "title":  "Yoga Flow",
+                          "description":  "Move through controlled positions to improve mobility and breath control.",
+                          "muscleGroup":  "Full body",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "yoga",
+                                       "mobility",
+                                       "recovery"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/b/bb/Lunge_-_exercise_demonstration_video.webm"
+                      },
+                      {
+                          "id":  "ex_dead_bug",
+                          "title":  "Dead Bug",
+                          "description":  "Keep lower back pressed down while alternating opposite arm and leg.",
+                          "muscleGroup":  "Core",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "core",
+                                       "control",
+                                       "stability"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/7/7e/Bodyweight_squat.jpg"
+                      },
+                      {
+                          "id":  "ex_bird_dog",
+                          "title":  "Bird Dog",
+                          "description":  "Reach opposite arm and leg while keeping hips square.",
+                          "muscleGroup":  "Core",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "core",
+                                       "back",
+                                       "control"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/0/0f/Lunge_exercise.jpg"
+                      },
+                      {
+                          "id":  "ex_cat_cow",
+                          "title":  "Cat-Cow",
+                          "description":  "Alternate spinal flexion and extension with smooth tempo and breathing.",
+                          "muscleGroup":  "Mobility",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "mobility",
+                                       "spine",
+                                       "warm-up"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/1/16/Bridge_exercise.jpg"
+                      },
+                      {
+                          "id":  "ex_child_pose_reach",
+                          "title":  "Child Pose Reach",
+                          "description":  "Relax hips and extend arms forward to release back and shoulders.",
+                          "muscleGroup":  "Mobility",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "recovery",
+                                       "mobility",
+                                       "breathing"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/0/03/Dead_bug_exercise.jpg"
+                      },
+                      {
+                          "id":  "ex_hip_hinge",
+                          "title":  "Hip Hinge Drill",
+                          "description":  "Push hips back while maintaining neutral spine to pattern posterior chain mechanics.",
+                          "muscleGroup":  "Posterior chain",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "hinge",
+                                       "mobility",
+                                       "technique"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/4/49/Resistance_band.jpg"
+                      },
+                      {
+                          "id":  "ex_wall_sit",
+                          "title":  "Wall Sit",
+                          "description":  "Hold 90-degree knee angle with full back contact on wall.",
+                          "muscleGroup":  "Legs",
+                          "equipment":  "Wall",
+                          "tags":  [
+                                       "legs",
+                                       "isometric",
+                                       "endurance"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/53/Fitness_center.jpg"
+                      },
+                      {
+                          "id":  "ex_calf_raise",
+                          "title":  "Calf Raise",
+                          "description":  "Rise to toes with slow tempo and full range.",
+                          "muscleGroup":  "Calves",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "calves",
+                                       "ankle",
+                                       "strength"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/e/e9/Cardio_workout.jpg"
+                      },
+                      {
+                          "id":  "ex_russian_twist",
+                          "title":  "Russian Twist",
+                          "description":  "Rotate through torso while keeping chest lifted and core engaged.",
+                          "muscleGroup":  "Core",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "core",
+                                       "obliques",
+                                       "rotation"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/9/9b/Core_training.jpg"
+                      },
+                      {
+                          "id":  "ex_superman_hold",
+                          "title":  "Superman Hold",
+                          "description":  "Lift chest and legs slightly from floor while keeping neck neutral.",
+                          "muscleGroup":  "Back",
+                          "equipment":  "Mat",
+                          "tags":  [
+                                       "back",
+                                       "posterior chain",
+                                       "isometric"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/c/cb/Yoga_pose.jpg"
+                      },
+                      {
+                          "id":  "ex_plank_row",
+                          "title":  "Plank Row",
+                          "description":  "Stabilize your torso while rowing and resisting hip rotation.",
+                          "muscleGroup":  "Core",
+                          "equipment":  "Dumbbell",
+                          "tags":  [
+                                       "core",
+                                       "back",
+                                       "anti-rotation"
+                                   ],
+                          "mediaType":  "image",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/8/8a/Leg_workout.jpg"
+                      },
+                      {
+                          "id":  "ex_step_back_jack",
+                          "title":  "Step-Back Jack",
+                          "description":  "Low-impact jack variation for elevated heart rate without hard landings.",
+                          "muscleGroup":  "Cardio",
+                          "equipment":  "Bodyweight",
+                          "tags":  [
+                                       "cardio",
+                                       "low impact",
+                                       "warm-up"
+                                   ],
+                          "mediaType":  "video",
+                          "mediaUrl":  "https://upload.wikimedia.org/wikipedia/commons/1/15/Pull-ups_-_exercise_demonstration_video.webm"
+                      }
+                  ],
+    "programs":  [
+                     {
+                         "id":  "prog_foundation_strength",
+                         "title":  "Foundation Strength",
+                         "description":  "A practical full body start with clean movement mechanics.",
+                         "level":  "Beginner",
+                         "durationMinutes":  24,
+                         "categoryId":  "cat_strength",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/53/Fitness_center.jpg"
+                     },
+                     {
+                         "id":  "prog_push_core_15",
+                         "title":  "Push \u0026 Core 15",
+                         "description":  "Upper-body pressing plus deep core stabilization in 15 minutes.",
+                         "level":  "Beginner",
+                         "durationMinutes":  15,
+                         "categoryId":  "cat_core",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/e/e9/Cardio_workout.jpg"
+                     },
+                     {
+                         "id":  "prog_lower_body_builder",
+                         "title":  "Lower Body Builder",
+                         "description":  "Leg and glute endurance with tempo-driven reps.",
+                         "level":  "Intermediate",
+                         "durationMinutes":  28,
+                         "categoryId":  "cat_strength",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/9/9b/Core_training.jpg"
+                     },
+                     {
+                         "id":  "prog_cardio_quick_15",
+                         "title":  "Cardio Quick 15",
+                         "description":  "Fast and simple cardio block when time is short.",
+                         "level":  "Beginner",
+                         "durationMinutes":  15,
+                         "categoryId":  "cat_cardio",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/c/cb/Yoga_pose.jpg"
+                     },
+                     {
+                         "id":  "prog_hiit_pulse",
+                         "title":  "HIIT Pulse",
+                         "description":  "High-intensity intervals to challenge conditioning and work capacity.",
+                         "level":  "Intermediate",
+                         "durationMinutes":  20,
+                         "categoryId":  "cat_hiit",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/8/8a/Leg_workout.jpg"
+                     },
+                     {
+                         "id":  "prog_core_control",
+                         "title":  "Core Control",
+                         "description":  "Trunk stability and anti-rotation focus for better movement quality.",
+                         "level":  "Intermediate",
+                         "durationMinutes":  22,
+                         "categoryId":  "cat_core",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/2/28/Gym_room.jpg"
+                     },
+                     {
+                         "id":  "prog_mobility_reset",
+                         "title":  "Mobility Reset",
+                         "description":  "Restore range of motion and reduce stiffness after long sitting.",
+                         "level":  "Beginner",
+                         "durationMinutes":  18,
+                         "categoryId":  "cat_mobility",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/53/Fitness_center.jpg"
+                     },
+                     {
+                         "id":  "prog_yoga_balance",
+                         "title":  "Yoga Balance Flow",
+                         "description":  "Calm but demanding sequence for balance, breathing, and posture.",
+                         "level":  "Beginner",
+                         "durationMinutes":  20,
+                         "categoryId":  "cat_yoga",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/e/e9/Cardio_workout.jpg"
+                     },
+                     {
+                         "id":  "prog_glute_focus",
+                         "title":  "Glute Focus",
+                         "description":  "Posterior chain emphasis for stronger hips and better support.",
+                         "level":  "Intermediate",
+                         "durationMinutes":  24,
+                         "categoryId":  "cat_strength",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/9/9b/Core_training.jpg"
+                     },
+                     {
+                         "id":  "prog_no_jump_conditioning",
+                         "title":  "No-Jump Conditioning",
+                         "description":  "Heart-rate work with low-impact movement choices.",
+                         "level":  "Beginner",
+                         "durationMinutes":  19,
+                         "categoryId":  "cat_hiit",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/c/cb/Yoga_pose.jpg"
+                     },
+                     {
+                         "id":  "prog_athletic_engine",
+                         "title":  "Athletic Engine",
+                         "description":  "Advanced mixed conditioning session for endurance and power.",
+                         "level":  "Advanced",
+                         "durationMinutes":  30,
+                         "categoryId":  "cat_hiit",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/8/8a/Leg_workout.jpg"
+                     },
+                     {
+                         "id":  "prog_morning_wake",
+                         "title":  "Morning Wake-Up",
+                         "description":  "Short activation block to start the day energized.",
+                         "level":  "Beginner",
+                         "durationMinutes":  12,
+                         "categoryId":  "cat_mobility",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/2/28/Gym_room.jpg"
+                     },
+                     {
+                         "id":  "prog_evening_recovery",
+                         "title":  "Evening Recovery",
+                         "description":  "Downshift routine to release tension and recover for tomorrow.",
+                         "level":  "Beginner",
+                         "durationMinutes":  16,
+                         "categoryId":  "cat_yoga",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/5/53/Fitness_center.jpg"
+                     },
+                     {
+                         "id":  "prog_full_body_plus",
+                         "title":  "Full Body Plus",
+                         "description":  "Balanced strength and cardio blend for all major muscle groups.",
+                         "level":  "Intermediate",
+                         "durationMinutes":  26,
+                         "categoryId":  "cat_strength",
+                         "backgroundImageUrl":  "https://upload.wikimedia.org/wikipedia/commons/e/e9/Cardio_workout.jpg"
+                     }
+                 ],
+    "programExercises":  [
+                             {
+                                 "programId":  "prog_foundation_strength",
+                                 "exerciseId":  "ex_step_back_jack",
+                                 "order":  1,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_foundation_strength",
+                                 "exerciseId":  "ex_pushup_standard",
+                                 "order":  2,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  10
+                             },
+                             {
+                                 "programId":  "prog_foundation_strength",
+                                 "exerciseId":  "ex_squat_air",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  15
+                             },
+                             {
+                                 "programId":  "prog_foundation_strength",
+                                 "exerciseId":  "ex_lunge_reverse",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_foundation_strength",
+                                 "exerciseId":  "ex_glute_bridge",
+                                 "order":  5,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_push_core_15",
+                                 "exerciseId":  "ex_pushup_incline",
+                                 "order":  1,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_push_core_15",
+                                 "exerciseId":  "ex_low_plank",
+                                 "order":  2,
+                                 "defaultDurationSec":  35,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_push_core_15",
+                                 "exerciseId":  "ex_plank_hold",
+                                 "order":  3,
+                                 "defaultDurationSec":  30,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_push_core_15",
+                                 "exerciseId":  "ex_plank_row",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_push_core_15",
+                                 "exerciseId":  "ex_russian_twist",
+                                 "order":  5,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  20
+                             },
+                             {
+                                 "programId":  "prog_lower_body_builder",
+                                 "exerciseId":  "ex_squat_air",
+                                 "order":  1,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  18
+                             },
+                             {
+                                 "programId":  "prog_lower_body_builder",
+                                 "exerciseId":  "ex_squat_pulse",
+                                 "order":  2,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  16
+                             },
+                             {
+                                 "programId":  "prog_lower_body_builder",
+                                 "exerciseId":  "ex_lunge_reverse",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  14
+                             },
+                             {
+                                 "programId":  "prog_lower_body_builder",
+                                 "exerciseId":  "ex_calf_raise",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  24
+                             },
+                             {
+                                 "programId":  "prog_lower_body_builder",
+                                 "exerciseId":  "ex_wall_sit",
+                                 "order":  5,
+                                 "defaultDurationSec":  50,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_cardio_quick_15",
+                                 "exerciseId":  "ex_jumping_jacks",
+                                 "order":  1,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_cardio_quick_15",
+                                 "exerciseId":  "ex_skipping_rope",
+                                 "order":  2,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_cardio_quick_15",
+                                 "exerciseId":  "ex_mountain_climbers",
+                                 "order":  3,
+                                 "defaultDurationSec":  35,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_cardio_quick_15",
+                                 "exerciseId":  "ex_step_back_jack",
+                                 "order":  4,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_cardio_quick_15",
+                                 "exerciseId":  "ex_low_plank",
+                                 "order":  5,
+                                 "defaultDurationSec":  30,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_hiit_pulse",
+                                 "exerciseId":  "ex_jumping_jacks",
+                                 "order":  1,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_hiit_pulse",
+                                 "exerciseId":  "ex_pushup_standard",
+                                 "order":  2,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_hiit_pulse",
+                                 "exerciseId":  "ex_squat_pulse",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  18
+                             },
+                             {
+                                 "programId":  "prog_hiit_pulse",
+                                 "exerciseId":  "ex_mountain_climbers",
+                                 "order":  4,
+                                 "defaultDurationSec":  35,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_hiit_pulse",
+                                 "exerciseId":  "ex_skipping_rope",
+                                 "order":  5,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_core_control",
+                                 "exerciseId":  "ex_low_plank",
+                                 "order":  1,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_core_control",
+                                 "exerciseId":  "ex_plank_hold",
+                                 "order":  2,
+                                 "defaultDurationSec":  35,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_core_control",
+                                 "exerciseId":  "ex_dead_bug",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  14
+                             },
+                             {
+                                 "programId":  "prog_core_control",
+                                 "exerciseId":  "ex_bird_dog",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_core_control",
+                                 "exerciseId":  "ex_russian_twist",
+                                 "order":  5,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  22
+                             },
+                             {
+                                 "programId":  "prog_mobility_reset",
+                                 "exerciseId":  "ex_cat_cow",
+                                 "order":  1,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_mobility_reset",
+                                 "exerciseId":  "ex_child_pose_reach",
+                                 "order":  2,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_mobility_reset",
+                                 "exerciseId":  "ex_hip_hinge",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  15
+                             },
+                             {
+                                 "programId":  "prog_mobility_reset",
+                                 "exerciseId":  "ex_lateral_lunge",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_mobility_reset",
+                                 "exerciseId":  "ex_yoga_flow",
+                                 "order":  5,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_yoga_balance",
+                                 "exerciseId":  "ex_yoga_flow",
+                                 "order":  1,
+                                 "defaultDurationSec":  50,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_yoga_balance",
+                                 "exerciseId":  "ex_child_pose_reach",
+                                 "order":  2,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_yoga_balance",
+                                 "exerciseId":  "ex_cat_cow",
+                                 "order":  3,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_yoga_balance",
+                                 "exerciseId":  "ex_bird_dog",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_yoga_balance",
+                                 "exerciseId":  "ex_low_plank",
+                                 "order":  5,
+                                 "defaultDurationSec":  30,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_glute_focus",
+                                 "exerciseId":  "ex_glute_bridge",
+                                 "order":  1,
+                                 "defaultDurationSec":  50,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_glute_focus",
+                                 "exerciseId":  "ex_lunge_reverse",
+                                 "order":  2,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  14
+                             },
+                             {
+                                 "programId":  "prog_glute_focus",
+                                 "exerciseId":  "ex_squat_pulse",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  16
+                             },
+                             {
+                                 "programId":  "prog_glute_focus",
+                                 "exerciseId":  "ex_hip_hinge",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  15
+                             },
+                             {
+                                 "programId":  "prog_glute_focus",
+                                 "exerciseId":  "ex_calf_raise",
+                                 "order":  5,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  22
+                             },
+                             {
+                                 "programId":  "prog_no_jump_conditioning",
+                                 "exerciseId":  "ex_pushup_incline",
+                                 "order":  1,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_no_jump_conditioning",
+                                 "exerciseId":  "ex_wall_sit",
+                                 "order":  2,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_no_jump_conditioning",
+                                 "exerciseId":  "ex_mountain_climbers",
+                                 "order":  3,
+                                 "defaultDurationSec":  30,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_no_jump_conditioning",
+                                 "exerciseId":  "ex_plank_row",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_no_jump_conditioning",
+                                 "exerciseId":  "ex_glute_bridge",
+                                 "order":  5,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_athletic_engine",
+                                 "exerciseId":  "ex_skipping_rope",
+                                 "order":  1,
+                                 "defaultDurationSec":  50,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_athletic_engine",
+                                 "exerciseId":  "ex_jumping_jacks",
+                                 "order":  2,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_athletic_engine",
+                                 "exerciseId":  "ex_pushup_standard",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  14
+                             },
+                             {
+                                 "programId":  "prog_athletic_engine",
+                                 "exerciseId":  "ex_squat_air",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  20
+                             },
+                             {
+                                 "programId":  "prog_athletic_engine",
+                                 "exerciseId":  "ex_mountain_climbers",
+                                 "order":  5,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_morning_wake",
+                                 "exerciseId":  "ex_cat_cow",
+                                 "order":  1,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_morning_wake",
+                                 "exerciseId":  "ex_hip_hinge",
+                                 "order":  2,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_morning_wake",
+                                 "exerciseId":  "ex_step_back_jack",
+                                 "order":  3,
+                                 "defaultDurationSec":  35,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_morning_wake",
+                                 "exerciseId":  "ex_plank_hold",
+                                 "order":  4,
+                                 "defaultDurationSec":  25,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_morning_wake",
+                                 "exerciseId":  "ex_bird_dog",
+                                 "order":  5,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  10
+                             },
+                             {
+                                 "programId":  "prog_evening_recovery",
+                                 "exerciseId":  "ex_yoga_flow",
+                                 "order":  1,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_evening_recovery",
+                                 "exerciseId":  "ex_child_pose_reach",
+                                 "order":  2,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_evening_recovery",
+                                 "exerciseId":  "ex_cat_cow",
+                                 "order":  3,
+                                 "defaultDurationSec":  40,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_evening_recovery",
+                                 "exerciseId":  "ex_glute_bridge",
+                                 "order":  4,
+                                 "defaultDurationSec":  35,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_evening_recovery",
+                                 "exerciseId":  "ex_superman_hold",
+                                 "order":  5,
+                                 "defaultDurationSec":  30,
+                                 "defaultReps":  0
+                             },
+                             {
+                                 "programId":  "prog_full_body_plus",
+                                 "exerciseId":  "ex_pushup_standard",
+                                 "order":  1,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_full_body_plus",
+                                 "exerciseId":  "ex_squat_air",
+                                 "order":  2,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  16
+                             },
+                             {
+                                 "programId":  "prog_full_body_plus",
+                                 "exerciseId":  "ex_lunge_reverse",
+                                 "order":  3,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  14
+                             },
+                             {
+                                 "programId":  "prog_full_body_plus",
+                                 "exerciseId":  "ex_plank_row",
+                                 "order":  4,
+                                 "defaultDurationSec":  0,
+                                 "defaultReps":  12
+                             },
+                             {
+                                 "programId":  "prog_full_body_plus",
+                                 "exerciseId":  "ex_skipping_rope",
+                                 "order":  5,
+                                 "defaultDurationSec":  45,
+                                 "defaultReps":  0
+                             }
+                         ]
+}

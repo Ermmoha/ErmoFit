@@ -1,0 +1,164 @@
+Ты — senior Android developer. Создай мобильное приложение “ErmoFit” для тренировок.
+
+СТЕК И АРХИТЕКТУРА
+- Kotlin, Android, Jetpack Compose, Material 3
+- MVVM + Repository, Coroutines, Flow
+- Navigation Compose (single-activity)
+- DI: Hilt
+- Локальная БД: Room
+- Firebase Auth: email/password (регистрация/вход/выход)
+- Firestore: привязанное к пользователю избранное + профиль
+- DataStore Preferences: история поиска (последние 5 запросов)
+- Media: Coil для изображений + ExoPlayer (Media3) для видео (и гиф через Coil)
+
+ГЛАВНОЕ ТРЕБОВАНИЕ
+Справочные данные (категории, упражнения, программы, связи программа->упражнения) должны храниться в Room.
+Избранное должно привязываться к текущему Firebase user (uid) и храниться в Firestore.
+Приложение должно собираться и запускаться без внешних платных ключей. Firebase подключение через google-services.json (пользователь добавит сам).
+
+ДАННЫЕ: ПАРСИНГ -> ROOM
+Сделай механизм загрузки данных в Room:
+1) Основной вариант: загрузить JSON по HTTP (Retrofit/OkHttp) с какого-нибудь публичного raw URL (например GitHub raw). 
+2) Фолбэк: если сеть недоступна или URL недоступен — загрузить тот же JSON из assets (assets/ermofit_seed.json).
+3) При первом запуске (или если БД пустая) — распарсить JSON и сохранить в Room в транзакции.
+4) Добавь версионирование seed: в DataStore хранить seedVersion; если версия JSON изменилась — обновить БД (стратегия: очистить и перезаполнить или аккуратная миграция — выбери и объясни).
+
+JSON должен содержать:
+- categories[]
+- exercises[] (с mediaUrl, mediaType=image|gif|video)
+- programs[] (с backgroundImageUrl, description, level, durationMinutes)
+- programExercises[] (programId, exerciseId, order, defaultDurationSec, defaultReps)
+
+MEDIA (ФОТО / GIF / ВИДЕО)
+- В ExerciseDetailsScreen показывать медиа:
+  - если mediaType=image или gif: показать через Coil AsyncImage
+  - если mediaType=video: встроенный видеоплеер на базе Media3 ExoPlayer (autoplay off, кнопки play/pause)
+- Для демо используй стабильные публичные URL (можно примеры с Wikimedia/peertube/mp4). Но обязательно: если ссылка не загрузилась — показать placeholder.
+
+ТАЙМЕР И ВЫПОЛНЕНИЕ ТРЕНИРОВКИ
+Нужно реализовать выполнение программы с таймером:
+- Экран WorkoutPlayerScreen(programId)
+- Показывает упражнения по порядку (из связующей таблицы programExercises)
+- Для каждого упражнения:
+  - название, описание/подсказка, медиа (image/gif/video)
+  - таймер:
+    - если упражнение по времени (durationSec > 0) — обратный отсчет
+    - если упражнение по повторам (reps > 0) — таймер необязателен, но добавь “секундомер отдыха” между подходами (например 30 сек)
+  - кнопки: Start/Pause, Next, Previous, Finish
+  - прогресс: “Упражнение 2 из 8”, прогрессбар
+  - опционально: RestScreen на 15–30 секунд между упражнениями (настраиваемо)
+- Таймер должен переживать поворот экрана и пересоздание Compose (состояние в ViewModel). Для long-running — достаточно ViewModel + savedStateHandle; фоновые сервисы не обязательны, но обработай onDispose корректно.
+
+НАВИГАЦИЯ И ЭКРАНЫ
+1) WelcomeScreen
+- Кнопки: “Войти”, “Регистрация”
+- Авто-редирект: если FirebaseAuth.currentUser != null → MainScreen
+
+2) Auth
+- LoginScreen: email/password, валидация, ошибки Firebase (Snackbar), переход в MainScreen
+- RegisterScreen: name, email, password, repeat password
+  - после регистрации: обновить displayName
+  - создать документ /users/{uid} в Firestore: {displayName, email, createdAt}
+  - перейти в MainScreen
+
+3) MainScreen (Scaffold)
+- BottomBar: Favorites, Home, Categories, Profile
+- TopBar: заголовок + иконка поиска (обязательна на Home; можно на остальных)
+- Search открывает SearchScreen
+
+4) HomeScreen
+- Мотивирующий лозунг (случайный из списка при входе на экран)
+- Секция “Рекомендуемые программы” (из Room)
+- Карточка программы: фон (backgroundImageUrl), затемнение, название
+- Клик → ProgramDetailsScreen(programId)
+
+5) ProgramDetailsScreen
+- Заголовок/фон/описание/уровень/длительность
+- Кнопки:
+  - “Добавить в избранное” / “Убрать из избранного”
+  - “Начать тренировку” → WorkoutPlayerScreen(programId)
+- Список упражнений в карточках (из Room через join)
+  - клик → ExerciseDetailsScreen(exerciseId)
+
+6) ExerciseDetailsScreen
+- Медиа (image/gif/video)
+- Описание, группа мышц, оборудование, тэги
+- Кнопка “Добавить в избранное упражнение” (если нужно)
+
+7) CategoriesScreen
+- Список категорий из Room
+- Клик категории → экран CategoryProgramsScreen(categoryId) со списком программ
+
+8) FavoritesScreen
+- Должен показывать избранные программы (и упражнения, если реализуешь) для текущего uid
+- Источник истины избранного: Firestore
+- Но данные самих программ/упражнений берём из Room, подтягивая по id
+- Реализуй поток:
+  - слушаем Firestore favorites (snapshot listener → Flow)
+  - получаем список id
+  - в Room запрашиваем сущности по списку id
+  - показываем UI
+
+9) ProfileScreen
+- displayName, email
+- кнопка “Выйти” → WelcomeScreen
+- можно: переключатель темы, но необязательно
+
+ПОИСК + ИСТОРИЯ 5 ЗАПРОСОВ
+- SearchScreen:
+  - поле ввода, список результатов: упражнения + программы (из Room) с фильтрацией по title/tags
+  - при выборе результата — переход на details
+  - хранить последние 5 уникальных запросов в DataStore (самые новые сверху)
+  - показывать “Недавние запросы” и возможность удалить один или очистить все
+
+ROOM СХЕМА
+Сущности:
+- CategoryEntity(id, title, imageUrl?)
+- ExerciseEntity(id, title, description, muscleGroup, equipment, tags(List<String> as TypeConverter), mediaType, mediaUrl)
+- ProgramEntity(id, title, description, level, durationMinutes, categoryId, backgroundImageUrl)
+- ProgramExerciseEntity(programId, exerciseId, orderIndex, defaultDurationSec, defaultReps) (primaryKey: programId+exerciseId)
+DAO:
+- getProgramsRecommended(limit)
+- getProgramById
+- getExercisesForProgram(programId) (join + order)
+- searchPrograms(query)
+- searchExercises(query)
+- getProgramsByCategory(categoryId)
+- getByIds(list)
+TypeConverters для List<String>
+
+FIRESTORE ИЗБРАННОЕ (ПРИВЯЗКА К UID)
+Структура (выбери 1 и реализуй):
+Вариант A (рекомендуется): subcollection:
+- /users/{uid}/favoritesPrograms/{programId} -> {createdAt}
+- /users/{uid}/favoritesExercises/{exerciseId} -> {createdAt}
+Плюсы: удобно слушать, нет лимита массива.
+Реализуй:
+- toggleFavoriteProgram(programId)
+- observeFavoriteProgramIds(): Flow<List<String>>
+- аналогично для упражнений (по желанию)
+
+ПРАВИЛА БЕЗОПАСНОСТИ FIRESTORE (пример)
+- пользователь может читать/писать только свои документы /users/{uid} и подколлекции.
+
+ОБЯЗАТЕЛЬНЫЕ ФАЙЛЫ И РЕЗУЛЬТАТ
+Сгенерируй:
+- build.gradle.kts (app) со всеми зависимостями: compose, material3, navigation, room, retrofit/okhttp, coil, media3, firebase auth, firestore, datastore, hilt
+- настройки plugins: google-services, kotlin-kapt, hilt
+- все экраны Compose + навигация
+- ViewModel для каждого экрана (минимум: AuthViewModel, HomeViewModel, ProgramDetailsViewModel, SearchViewModel, WorkoutPlayerViewModel, FavoritesViewModel, ProfileViewModel)
+- Repositories: AuthRepository, LocalDataRepository(Room), FavoritesRepository(Firestore), SeedRepository(парсинг)
+- DataStore менеджер для истории поиска и seedVersion
+- assets/ermofit_seed.json (готовый пример данных: 4 категории, 12 упражнений, 6 программ, связи)
+- README с инструкцией запуска:
+  1) создать Firebase project
+  2) добавить android app + скачать google-services.json в app/
+  3) включить Email/Password
+  4) запустить
+
+КАЧЕСТВО
+- Без “TODO” вместо логики — всё должно быть реализовано.
+- Ошибки сети/медиа — обработать (placeholder, retry)
+- UI аккуратный: карточки, отступы, скроллы, состояния загрузки/пусто/ошибка.
+
+Сначала выведи структуру проекта, затем ключевые файлы с кодом.

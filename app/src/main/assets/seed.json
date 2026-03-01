@@ -1,0 +1,1910 @@
+﻿{
+    "exercises":  [
+                      {
+                          "id":  "ex_001",
+                          "name":  "Приседания №1",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  "ex_media_01"
+                      },
+                      {
+                          "id":  "ex_002",
+                          "name":  "Отжимания №1",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  "ex_media_02"
+                      },
+                      {
+                          "id":  "ex_003",
+                          "name":  "Скручивания №1",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bands"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  "ex_media_03"
+                      },
+                      {
+                          "id":  "ex_004",
+                          "name":  "Берпи №1",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  45,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+                                                    "no_jumps",
+                                                    "quiet"
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  "ex_media_04"
+                      },
+                      {
+                          "id":  "ex_005",
+                          "name":  "Повороты грудного отдела №1",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  50,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  "ex_media_05"
+                      },
+                      {
+                          "id":  "ex_006",
+                          "name":  "Выпады №2",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "pullup_bar"
+                                            ],
+                          "contraindications":  [
+                                                    "knees"
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  "ex_media_06"
+                      },
+                      {
+                          "id":  "ex_007",
+                          "name":  "Тяга в наклоне №2",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "jump_rope"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  "ex_media_07"
+                      },
+                      {
+                          "id":  "ex_008",
+                          "name":  "Планка №2",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  35,
+                          "defaultReps":  0,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bench"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  "ex_media_08"
+                      },
+                      {
+                          "id":  "ex_009",
+                          "name":  "Джампинг-джек №2",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  40,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  "ex_media_09"
+                      },
+                      {
+                          "id":  "ex_010",
+                          "name":  "Растяжка бедра №2",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  45,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  "ex_media_10"
+                      },
+                      {
+                          "id":  "ex_011",
+                          "name":  "Ягодичный мост №3",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bands"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  "ex_media_11"
+                      },
+                      {
+                          "id":  "ex_012",
+                          "name":  "Жим гантелей №3",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  60,
+                          "defaultReps":  0,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "dumbbells"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  "ex_media_12"
+                      },
+                      {
+                          "id":  "ex_013",
+                          "name":  "Русский твист №3",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "kettlebell"
+                                            ],
+                          "contraindications":  [
+                                                    "lower_back"
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  "ex_media_13"
+                      },
+                      {
+                          "id":  "ex_014",
+                          "name":  "Высокие колени №3",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  35,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+                                                    "no_jumps",
+                                                    "quiet"
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  "ex_media_14"
+                      },
+                      {
+                          "id":  "ex_015",
+                          "name":  "Мобилизация голеностопа №3",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  40,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  "ex_media_15"
+                      },
+                      {
+                          "id":  "ex_016",
+                          "name":  "Подъем на носки №4",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  45,
+                          "defaultReps":  0,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bench"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  "ex_media_16"
+                      },
+                      {
+                          "id":  "ex_017",
+                          "name":  "Разводка плеч №4",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  "ex_media_17"
+                      },
+                      {
+                          "id":  "ex_018",
+                          "name":  "Подъем ног №4",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  "ex_media_18"
+                      },
+                      {
+                          "id":  "ex_019",
+                          "name":  "Скакалка №4",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  30,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bands"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  "ex_media_19"
+                      },
+                      {
+                          "id":  "ex_020",
+                          "name":  "Растяжка задней цепи №4",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  35,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  "ex_media_20"
+                      },
+                      {
+                          "id":  "ex_021",
+                          "name":  "Присед плие №5",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "kettlebell"
+                                            ],
+                          "contraindications":  [
+                                                    "knees"
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_022",
+                          "name":  "Подтягивания с опорой №5",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "pullup_bar"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_023",
+                          "name":  "Боковая планка №5",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "jump_rope"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_024",
+                          "name":  "Конькобежец №5",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  60,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+                                                    "no_jumps",
+                                                    "quiet"
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_025",
+                          "name":  "Мягкие наклоны №5",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  30,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_026",
+                          "name":  "Шаги на месте №6",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_027",
+                          "name":  "Планка с касанием плеч №6",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bands"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_028",
+                          "name":  "Вакуум живота №6",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  45,
+                          "defaultReps":  0,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "dumbbells"
+                                            ],
+                          "contraindications":  [
+                                                    "lower_back"
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_029",
+                          "name":  "Бег на месте №6",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  50,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "kettlebell"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_030",
+                          "name":  "Кошка-корова №6",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  60,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_031",
+                          "name":  "Приседания №7",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "jump_rope"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_032",
+                          "name":  "Отжимания №7",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  35,
+                          "defaultReps":  0,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bench"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_033",
+                          "name":  "Скручивания №7",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_034",
+                          "name":  "Берпи №7",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  45,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+                                                    "no_jumps",
+                                                    "quiet"
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_035",
+                          "name":  "Повороты грудного отдела №7",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  50,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_036",
+                          "name":  "Выпады №8",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  60,
+                          "defaultReps":  0,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "dumbbells"
+                                            ],
+                          "contraindications":  [
+                                                    "knees"
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_037",
+                          "name":  "Тяга в наклоне №8",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "kettlebell"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_038",
+                          "name":  "Планка №8",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "pullup_bar"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_039",
+                          "name":  "Джампинг-джек №8",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  40,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "jump_rope"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_040",
+                          "name":  "Растяжка бедра №8",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  45,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_041",
+                          "name":  "Ягодичный мост №9",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_042",
+                          "name":  "Жим гантелей №9",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_043",
+                          "name":  "Русский твист №9",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bands"
+                                            ],
+                          "contraindications":  [
+                                                    "lower_back"
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_044",
+                          "name":  "Высокие колени №9",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  35,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+                                                    "no_jumps",
+                                                    "quiet"
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_045",
+                          "name":  "Мобилизация голеностопа №9",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  40,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_046",
+                          "name":  "Подъем на носки №10",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "pullup_bar"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_047",
+                          "name":  "Разводка плеч №10",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "jump_rope"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_048",
+                          "name":  "Подъем ног №10",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  60,
+                          "defaultReps":  0,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bench"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_049",
+                          "name":  "Скакалка №10",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  30,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_050",
+                          "name":  "Растяжка задней цепи №10",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  35,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_051",
+                          "name":  "Присед плие №11",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  8,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bands"
+                                            ],
+                          "contraindications":  [
+                                                    "knees"
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_052",
+                          "name":  "Подтягивания с опорой №11",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  45,
+                          "defaultReps":  0,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "dumbbells"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_053",
+                          "name":  "Боковая планка №11",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "kettlebell"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_054",
+                          "name":  "Конькобежец №11",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  60,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+                                                    "no_jumps",
+                                                    "quiet"
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_055",
+                          "name":  "Мягкие наклоны №11",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  30,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_056",
+                          "name":  "Шаги на месте №12",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  35,
+                          "defaultReps":  0,
+                          "musclePrimary":  "legs",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bench"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_057",
+                          "name":  "Планка с касанием плеч №12",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  10,
+                          "musclePrimary":  "upper",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "no_equipment"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_058",
+                          "name":  "Вакуум живота №12",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "reps",
+                          "defaultDurationSec":  0,
+                          "defaultReps":  12,
+                          "musclePrimary":  "core",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+                                                    "lower_back"
+                                                ],
+                          "level":  "beginner",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_059",
+                          "name":  "Бег на месте №12",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  50,
+                          "defaultReps":  0,
+                          "musclePrimary":  "cardio",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "bands"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "intermediate",
+                          "mediaResName":  null
+                      },
+                      {
+                          "id":  "ex_060",
+                          "name":  "Кошка-корова №12",
+                          "description":  "Техника: контролируйте движение, держите стабильный корпус и ровное дыхание.",
+                          "type":  "time",
+                          "defaultDurationSec":  60,
+                          "defaultReps":  0,
+                          "musclePrimary":  "mobility",
+                          "muscleSecondary":  null,
+                          "equipmentTags":  [
+                                                "mat"
+                                            ],
+                          "contraindications":  [
+
+                                                ],
+                          "level":  "advanced",
+                          "mediaResName":  null
+                      }
+                  ],
+    "trainings":  [
+                      {
+                          "id":  "tr_strength_beginner",
+                          "title":  "Силовая база — Новичок",
+                          "description":  "Готовая тренировка: цель «Сила», уровень «Новичок», длительность около 30 минут.",
+                          "goal":  "strength",
+                          "level":  "beginner",
+                          "durationMinutes":  30,
+                          "equipmentRequired":  [
+                                                    "no_equipment"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_strength_intermediate",
+                          "title":  "Силовая база — Средний",
+                          "description":  "Готовая тренировка: цель «Сила», уровень «Средний», длительность около 45 минут.",
+                          "goal":  "strength",
+                          "level":  "intermediate",
+                          "durationMinutes":  45,
+                          "equipmentRequired":  [
+                                                    "dumbbells"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_strength_advanced",
+                          "title":  "Силовая база — Продвинутый",
+                          "description":  "Готовая тренировка: цель «Сила», уровень «Продвинутый», длительность около 60 минут.",
+                          "goal":  "strength",
+                          "level":  "advanced",
+                          "durationMinutes":  60,
+                          "equipmentRequired":  [
+                                                    "dumbbells"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_fatburn_beginner",
+                          "title":  "Сжигание калорий — Новичок",
+                          "description":  "Готовая тренировка: цель «Похудение», уровень «Новичок», длительность около 20 минут.",
+                          "goal":  "fatburn",
+                          "level":  "beginner",
+                          "durationMinutes":  20,
+                          "equipmentRequired":  [
+                                                    "no_equipment"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_fatburn_intermediate",
+                          "title":  "Сжигание калорий — Средний",
+                          "description":  "Готовая тренировка: цель «Похудение», уровень «Средний», длительность около 30 минут.",
+                          "goal":  "fatburn",
+                          "level":  "intermediate",
+                          "durationMinutes":  30,
+                          "equipmentRequired":  [
+                                                    "no_equipment"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_fatburn_advanced",
+                          "title":  "Сжигание калорий — Продвинутый",
+                          "description":  "Готовая тренировка: цель «Похудение», уровень «Продвинутый», длительность около 45 минут.",
+                          "goal":  "fatburn",
+                          "level":  "advanced",
+                          "durationMinutes":  45,
+                          "equipmentRequired":  [
+                                                    "no_equipment"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_endurance_beginner",
+                          "title":  "Развитие выносливости — Новичок",
+                          "description":  "Готовая тренировка: цель «Выносливость», уровень «Новичок», длительность около 30 минут.",
+                          "goal":  "endurance",
+                          "level":  "beginner",
+                          "durationMinutes":  30,
+                          "equipmentRequired":  [
+                                                    "no_equipment"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_endurance_intermediate",
+                          "title":  "Развитие выносливости — Средний",
+                          "description":  "Готовая тренировка: цель «Выносливость», уровень «Средний», длительность около 45 минут.",
+                          "goal":  "endurance",
+                          "level":  "intermediate",
+                          "durationMinutes":  45,
+                          "equipmentRequired":  [
+                                                    "no_equipment"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_endurance_advanced",
+                          "title":  "Развитие выносливости — Продвинутый",
+                          "description":  "Готовая тренировка: цель «Выносливость», уровень «Продвинутый», длительность около 60 минут.",
+                          "goal":  "endurance",
+                          "level":  "advanced",
+                          "durationMinutes":  60,
+                          "equipmentRequired":  [
+                                                    "no_equipment"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_mobility_beginner",
+                          "title":  "Подвижность и гибкость — Новичок",
+                          "description":  "Готовая тренировка: цель «Подвижность», уровень «Новичок», длительность около 15 минут.",
+                          "goal":  "mobility",
+                          "level":  "beginner",
+                          "durationMinutes":  15,
+                          "equipmentRequired":  [
+                                                    "mat"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_mobility_intermediate",
+                          "title":  "Подвижность и гибкость — Средний",
+                          "description":  "Готовая тренировка: цель «Подвижность», уровень «Средний», длительность около 20 минут.",
+                          "goal":  "mobility",
+                          "level":  "intermediate",
+                          "durationMinutes":  20,
+                          "equipmentRequired":  [
+                                                    "mat"
+                                                ],
+                          "isGenerated":  false
+                      },
+                      {
+                          "id":  "tr_mobility_advanced",
+                          "title":  "Подвижность и гибкость — Продвинутый",
+                          "description":  "Готовая тренировка: цель «Подвижность», уровень «Продвинутый», длительность около 30 минут.",
+                          "goal":  "mobility",
+                          "level":  "advanced",
+                          "durationMinutes":  30,
+                          "equipmentRequired":  [
+                                                    "mat"
+                                                ],
+                          "isGenerated":  false
+                      }
+                  ],
+    "trainingExercises":  [
+                              {
+                                  "trainingId":  "tr_strength_beginner",
+                                  "exerciseId":  "ex_001",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_beginner",
+                                  "exerciseId":  "ex_002",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_beginner",
+                                  "exerciseId":  "ex_003",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_beginner",
+                                  "exerciseId":  "ex_004",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_beginner",
+                                  "exerciseId":  "ex_005",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_beginner",
+                                  "exerciseId":  "ex_006",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_beginner",
+                                  "exerciseId":  "ex_007",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_intermediate",
+                                  "exerciseId":  "ex_004",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_intermediate",
+                                  "exerciseId":  "ex_005",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_intermediate",
+                                  "exerciseId":  "ex_007",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  null,
+                                  "customReps":  12
+                              },
+                              {
+                                  "trainingId":  "tr_strength_intermediate",
+                                  "exerciseId":  "ex_008",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_intermediate",
+                                  "exerciseId":  "ex_010",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_intermediate",
+                                  "exerciseId":  "ex_011",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  null,
+                                  "customReps":  12
+                              },
+                              {
+                                  "trainingId":  "tr_strength_intermediate",
+                                  "exerciseId":  "ex_013",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  12
+                              },
+                              {
+                                  "trainingId":  "tr_strength_advanced",
+                                  "exerciseId":  "ex_004",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_advanced",
+                                  "exerciseId":  "ex_005",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_advanced",
+                                  "exerciseId":  "ex_006",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  null,
+                                  "customReps":  12
+                              },
+                              {
+                                  "trainingId":  "tr_strength_advanced",
+                                  "exerciseId":  "ex_007",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  null,
+                                  "customReps":  12
+                              },
+                              {
+                                  "trainingId":  "tr_strength_advanced",
+                                  "exerciseId":  "ex_008",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_advanced",
+                                  "exerciseId":  "ex_009",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_strength_advanced",
+                                  "exerciseId":  "ex_010",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_013",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_016",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_019",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_022",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_025",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_028",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_031",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_034",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_beginner",
+                                  "exerciseId":  "ex_037",
+                                  "orderIndex":  9,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_008",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_010",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_011",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_013",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_014",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_016",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_017",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_019",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_intermediate",
+                                  "exerciseId":  "ex_020",
+                                  "orderIndex":  9,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_007",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_008",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_009",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_010",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_011",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_012",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_013",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_014",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_fatburn_advanced",
+                                  "exerciseId":  "ex_015",
+                                  "orderIndex":  9,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_022",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_025",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_028",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_031",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_034",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_037",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_040",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_beginner",
+                                  "exerciseId":  "ex_043",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_013",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_014",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_016",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_017",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_019",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_020",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_022",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_intermediate",
+                                  "exerciseId":  "ex_023",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_009",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_014",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_024",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_034",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_044",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_049",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_054",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_endurance_advanced",
+                                  "exerciseId":  "ex_004",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  35,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_031",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_034",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_037",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_040",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_043",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_046",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_049",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_beginner",
+                                  "exerciseId":  "ex_052",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_020",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_025",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_035",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_040",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_050",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_055",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_058",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_intermediate",
+                                  "exerciseId":  "ex_005",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_055",
+                                  "orderIndex":  1,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_058",
+                                  "orderIndex":  2,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_060",
+                                  "orderIndex":  3,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_005",
+                                  "orderIndex":  4,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_010",
+                                  "orderIndex":  5,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_015",
+                                  "orderIndex":  6,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_018",
+                                  "orderIndex":  7,
+                                  "customDurationSec":  null,
+                                  "customReps":  null
+                              },
+                              {
+                                  "trainingId":  "tr_mobility_advanced",
+                                  "exerciseId":  "ex_020",
+                                  "orderIndex":  8,
+                                  "customDurationSec":  40,
+                                  "customReps":  null
+                              }
+                          ]
+}
