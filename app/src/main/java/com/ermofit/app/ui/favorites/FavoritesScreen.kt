@@ -19,15 +19,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ermofit.app.ui.components.ExerciseCard
 import com.ermofit.app.ui.components.ProgramCard
+import com.ermofit.app.ui.i18n.appLanguage
 import com.ermofit.app.ui.i18n.appStrings
 
 @Composable
 fun FavoritesScreen(
+    onCustomProgramClick: (String) -> Unit,
     onProgramClick: (String) -> Unit,
     onExerciseClick: (String) -> Unit,
     viewModel: FavoritesViewModel = hiltViewModel()
 ) {
     val strings = appStrings()
+    val isRu = appLanguage().raw == "ru"
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LazyColumn(
@@ -37,7 +40,42 @@ fun FavoritesScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
-            Text(text = strings.favoriteProgramsTitle, fontWeight = FontWeight.Bold)
+            Text(
+                text = if (isRu) "Мои программы" else "My programs",
+                fontWeight = FontWeight.Bold
+            )
+        }
+        if (uiState.customPrograms.isEmpty()) {
+            item {
+                Text(
+                    if (isRu) {
+                        "Пока нет созданных программ."
+                    } else {
+                        "No created programs yet."
+                    }
+                )
+            }
+        } else {
+            items(uiState.customPrograms, key = { it.id }) { program ->
+                ProgramCard(
+                    program = program.toPreviewProgram(),
+                    titleOverride = program.title,
+                    subtitleOverride = if (isRu) {
+                        "${program.exercises.size} упражнений"
+                    } else {
+                        "${program.exercises.size} exercises"
+                    },
+                    onClick = { onCustomProgramClick(program.id) }
+                )
+            }
+        }
+
+        item {
+            Text(
+                text = strings.favoriteProgramsTitle,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
         if (uiState.programs.isEmpty()) {
             item { Text(strings.noFavoritePrograms) }

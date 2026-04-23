@@ -42,6 +42,8 @@ import com.ermofit.app.ui.home.HomeScreen
 import com.ermofit.app.ui.i18n.appStrings
 import com.ermofit.app.ui.profile.ProfileScreen
 import com.ermofit.app.ui.program.ProgramDetailsScreen
+import com.ermofit.app.ui.customprogram.CustomProgramBuilderScreen
+import com.ermofit.app.ui.customprogram.CustomProgramDetailsScreen
 import com.ermofit.app.ui.search.SearchScreen
 import com.ermofit.app.ui.workout.WorkoutPlayerScreen
 
@@ -216,11 +218,17 @@ fun MainScreen(
             composable(MainRoutes.Home) {
                 HomeScreen(
                     sortDialogSignal = homeSortSignal,
-                    onProgramClick = { navController.navigate(MainRoutes.programDetails(it)) }
+                    onProgramClick = { navController.navigate(MainRoutes.programDetails(it)) },
+                    onCreateProgramClick = {
+                        navController.navigate(MainRoutes.CreateCustomProgram) {
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
             composable(MainRoutes.Favorites) {
                 FavoritesScreen(
+                    onCustomProgramClick = { navController.navigate(MainRoutes.customProgramDetails(it)) },
                     onProgramClick = { navController.navigate(MainRoutes.programDetails(it)) },
                     onExerciseClick = { navController.navigate(MainRoutes.exerciseDetails(it)) }
                 )
@@ -240,6 +248,43 @@ fun MainScreen(
                     onExerciseClick = { navController.navigate(MainRoutes.exerciseDetails(it)) }
                 )
             }
+            composable(MainRoutes.CreateCustomProgram) {
+                CustomProgramBuilderScreen(
+                    onProgramSaved = { programId ->
+                        navController.navigate(MainRoutes.customProgramDetails(programId)) {
+                            popUpTo(MainRoutes.CreateCustomProgram) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            composable(
+                route = MainRoutes.EditCustomProgram,
+                arguments = listOf(navArgument("programId") { type = NavType.StringType })
+            ) {
+                CustomProgramBuilderScreen(
+                    onProgramSaved = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            composable(
+                route = MainRoutes.CustomProgramDetails,
+                arguments = listOf(navArgument("programId") { type = NavType.StringType })
+            ) {
+                CustomProgramDetailsScreen(
+                    onExerciseClick = { navController.navigate(MainRoutes.exerciseDetails(it)) },
+                    onStartWorkout = {
+                        navController.navigate(
+                            MainRoutes.workoutPlayer(
+                                programId = it,
+                                source = MainRoutes.WorkoutSourceCustom
+                            )
+                        )
+                    },
+                    onEditProgram = { navController.navigate(MainRoutes.editCustomProgram(it)) },
+                    onProgramDeleted = { navController.popBackStack() }
+                )
+            }
             composable(
                 route = MainRoutes.ProgramDetails,
                 arguments = listOf(navArgument("programId") { type = NavType.StringType })
@@ -257,7 +302,13 @@ fun MainScreen(
             }
             composable(
                 route = MainRoutes.WorkoutPlayer,
-                arguments = listOf(navArgument("programId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("programId") { type = NavType.StringType },
+                    navArgument("source") {
+                        type = NavType.StringType
+                        defaultValue = MainRoutes.WorkoutSourceStock
+                    }
+                )
             ) {
                 WorkoutPlayerScreen(
                     onBack = { navController.popBackStack() },
@@ -275,6 +326,9 @@ private fun topBarTitle(route: String, strings: AppStrings): String {
         route == MainRoutes.Profile -> strings.topProfile
         route == MainRoutes.Exercises -> strings.exercisesLabel
         route == MainRoutes.Search -> strings.topSearch
+        route == MainRoutes.CreateCustomProgram -> strings.topCreateProgram
+        route == MainRoutes.EditCustomProgram -> strings.topCreateProgram
+        route.startsWith("custom-programs/") -> strings.topProgramDetails
         route.startsWith("program/") -> strings.topProgramDetails
         route.startsWith("exercise/") -> strings.topExerciseDetails
         route.startsWith("workout/") -> strings.topWorkout

@@ -1,6 +1,7 @@
 package com.ermofit.app.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -24,17 +25,25 @@ fun ExerciseMedia(
     mediaUrl: String,
     fallbackImageUrl: String? = null,
     stableKey: String = mediaUrl,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    height: androidx.compose.ui.unit.Dp = 220.dp,
+    fillHeight: Boolean = false,
+    contentScale: ContentScale = ContentScale.Crop
 ) {
     val preferredUrl = mediaUrl.takeIf { it.isNotBlank() } ?: fallbackImageUrl.orEmpty()
-    val imageModifier = modifier
-        .fillMaxWidth()
-        .height(220.dp)
+    val imageModifier = if (fillHeight) {
+        modifier.fillMaxSize()
+    } else {
+        modifier
+            .fillMaxWidth()
+            .height(height)
+    }
 
     ExerciseImage(
         mediaUrl = preferredUrl,
         stableKey = stableKey,
-        modifier = imageModifier
+        modifier = imageModifier,
+        contentScale = contentScale
     )
 }
 
@@ -42,7 +51,8 @@ fun ExerciseMedia(
 private fun ExerciseImage(
     mediaUrl: String,
     stableKey: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
 ) {
     val strings = appStrings()
     val resolvedUrl = mediaUrl.trim()
@@ -51,7 +61,7 @@ private fun ExerciseImage(
     val activeUrl = candidates.getOrNull(candidateIndex).orEmpty()
 
     if (activeUrl.isBlank()) {
-        FallbackExerciseImage(seed = stableKey, modifier = modifier)
+        FallbackExerciseImage(seed = stableKey, modifier = modifier, contentScale = contentScale)
         return
     }
 
@@ -65,35 +75,33 @@ private fun ExerciseImage(
         },
         loading = {
             ShimmerPlaceholder(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
+                modifier = modifier
             )
         },
         error = {
             FallbackExerciseImage(
                 seed = stableKey,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
+                modifier = modifier,
+                contentScale = contentScale
             )
         },
         modifier = modifier,
-        contentScale = ContentScale.Crop
+        contentScale = contentScale
     )
 }
 
 @Composable
 private fun FallbackExerciseImage(
     seed: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
 ) {
     val imageId = fallbackExerciseImage(seed)
     Image(
         painter = painterResource(id = imageId),
         contentDescription = null,
         modifier = modifier,
-        contentScale = ContentScale.Crop
+        contentScale = contentScale
     )
 }
 

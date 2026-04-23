@@ -20,9 +20,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -63,6 +65,7 @@ import kotlin.math.roundToInt
 fun HomeScreen(
     sortDialogSignal: Int = 0,
     onProgramClick: (String) -> Unit,
+    onCreateProgramClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val strings = appStrings()
@@ -72,6 +75,7 @@ fun HomeScreen(
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsStateWithLifecycle()
     val selectedLevel by viewModel.selectedLevel.collectAsStateWithLifecycle()
+    val selectedMuscleGroup by viewModel.selectedMuscleGroup.collectAsStateWithLifecycle()
     val selectedSort by viewModel.selectedSort.collectAsStateWithLifecycle()
     val selectedMaxDuration by viewModel.selectedMaxDuration.collectAsStateWithLifecycle()
     val slogan by viewModel.slogan.collectAsStateWithLifecycle()
@@ -80,6 +84,9 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showSortDialog by rememberSaveable { mutableStateOf(false) }
     var handledSortDialogSignal by rememberSaveable { mutableStateOf(sortDialogSignal) }
+    val categoryTitleById = remember(categories) {
+        categories.associate { it.id to cleanCategoryTitle(it.title) }
+    }
 
     LaunchedEffect(error) {
         error?.let { message ->
@@ -97,7 +104,27 @@ fun HomeScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onCreateProgramClick,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                },
+                text = {
+                    Text(
+                        text = if (isRu) {
+                            "Создать программу"
+                        } else {
+                            "Create program"
+                        }
+                    )
+                }
+            )
+        }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -119,6 +146,17 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+
+            item {
+                HomeSectionHeader(
+                    title = strings.recommendedProgramsTitle,
+                    subtitle = if (isRu) {
+                        "Готовые планы из локальной базы."
+                    } else {
+                        "Ready-made plans from local storage."
+                    }
+                )
             }
 
             when {
@@ -146,6 +184,7 @@ fun HomeScreen(
                         ProgramCard(
                             program = program,
                             titleOverride = programTexts[program.id]?.title,
+                            subtitleOverride = categoryTitleById[program.categoryId],
                             onClick = { onProgramClick(program.id) }
                         )
                     }
@@ -160,15 +199,18 @@ fun HomeScreen(
             categories = categories,
             selectedCategoryId = selectedCategoryId,
             selectedLevel = selectedLevel,
+            selectedMuscleGroup = selectedMuscleGroup,
             selectedSort = selectedSort,
             selectedMaxDuration = selectedMaxDuration,
             onSelectCategory = viewModel::selectCategory,
             onSelectLevel = viewModel::selectLevel,
+            onSelectMuscleGroup = viewModel::selectMuscleGroup,
             onSelectSort = viewModel::selectSort,
             onSelectMaxDuration = viewModel::selectMaxDuration,
             onReset = {
                 viewModel.selectCategory(null)
                 viewModel.selectLevel(HomeViewModel.LevelFilter.ALL)
+                viewModel.selectMuscleGroup(HomeViewModel.MuscleGroupFilter.ALL)
                 viewModel.selectSort(HomeViewModel.SortOption.DEFAULT)
                 viewModel.selectMaxDuration(90)
             },
@@ -187,8 +229,28 @@ private fun HomeProgramCardShimmer() {
     )
 }
 
+@Composable
+private fun HomeSectionHeader(
+    title: String,
+    subtitle: String
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 private enum class SortSection {
     CATEGORY,
+    MUSCLE_GROUP,
     LEVEL,
     SORT
 }
@@ -200,10 +262,12 @@ private fun SortDialog(
     categories: List<CategoryEntity>,
     selectedCategoryId: String?,
     selectedLevel: HomeViewModel.LevelFilter,
+    selectedMuscleGroup: HomeViewModel.MuscleGroupFilter,
     selectedSort: HomeViewModel.SortOption,
     selectedMaxDuration: Int,
     onSelectCategory: (String?) -> Unit,
     onSelectLevel: (HomeViewModel.LevelFilter) -> Unit,
+    onSelectMuscleGroup: (HomeViewModel.MuscleGroupFilter) -> Unit,
     onSelectSort: (HomeViewModel.SortOption) -> Unit,
     onSelectMaxDuration: (Int) -> Unit,
     onReset: () -> Unit,
@@ -219,9 +283,9 @@ private fun SortDialog(
         buildList {
             add(
                 null to if (isRu) {
-                    "\u0412\u0441\u0435 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438"
+                    "\u041b\u044e\u0431\u043e\u0435 \u043c\u0435\u0441\u0442\u043e"
                 } else {
-                    "All categories"
+                    "Any place"
                 }
             )
             categories.forEach { category ->
@@ -242,6 +306,31 @@ private fun SortDialog(
             HomeViewModel.LevelFilter.BEGINNER to "Beginner",
             HomeViewModel.LevelFilter.INTERMEDIATE to "Intermediate",
             HomeViewModel.LevelFilter.ADVANCED to "Advanced"
+        )
+    }
+    val muscleGroupOptions = if (isRu) {
+        listOf(
+            HomeViewModel.MuscleGroupFilter.ALL to "\u0412\u0441\u0435 \u0433\u0440\u0443\u043f\u043f\u044b",
+            HomeViewModel.MuscleGroupFilter.FULL_BODY to "\u0412\u0441\u0435 \u0442\u0435\u043b\u043e",
+            HomeViewModel.MuscleGroupFilter.ABS to "\u041f\u0440\u0435\u0441\u0441",
+            HomeViewModel.MuscleGroupFilter.LEGS_GLUTES to "\u041d\u043e\u0433\u0438 \u0438 \u044f\u0433\u043e\u0434\u0438\u0446\u044b",
+            HomeViewModel.MuscleGroupFilter.CHEST to "\u0413\u0440\u0443\u0434\u044c",
+            HomeViewModel.MuscleGroupFilter.BACK to "\u0421\u043f\u0438\u043d\u0430",
+            HomeViewModel.MuscleGroupFilter.SHOULDERS_ARMS to "\u041f\u043b\u0435\u0447\u0438 \u0438 \u0440\u0443\u043a\u0438",
+            HomeViewModel.MuscleGroupFilter.CARDIO to "\u041a\u0430\u0440\u0434\u0438\u043e",
+            HomeViewModel.MuscleGroupFilter.MOBILITY to "\u0420\u0430\u0437\u043c\u0438\u043d\u043a\u0430"
+        )
+    } else {
+        listOf(
+            HomeViewModel.MuscleGroupFilter.ALL to "All groups",
+            HomeViewModel.MuscleGroupFilter.FULL_BODY to "Full body",
+            HomeViewModel.MuscleGroupFilter.ABS to "Abs",
+            HomeViewModel.MuscleGroupFilter.LEGS_GLUTES to "Legs and glutes",
+            HomeViewModel.MuscleGroupFilter.CHEST to "Chest",
+            HomeViewModel.MuscleGroupFilter.BACK to "Back",
+            HomeViewModel.MuscleGroupFilter.SHOULDERS_ARMS to "Shoulders and arms",
+            HomeViewModel.MuscleGroupFilter.CARDIO to "Cardio",
+            HomeViewModel.MuscleGroupFilter.MOBILITY to "Warm-up"
         )
     }
     val sortOptions = if (isRu) {
@@ -266,6 +355,8 @@ private fun SortDialog(
         ?: categoryOptions.first().second
     val selectedLevelLabel = levelOptions.firstOrNull { it.first == selectedLevel }?.second
         ?: levelOptions.first().second
+    val selectedMuscleGroupLabel = muscleGroupOptions.firstOrNull { it.first == selectedMuscleGroup }?.second
+        ?: muscleGroupOptions.first().second
     val selectedSortLabel = sortOptions.firstOrNull { it.first == selectedSort }?.second
         ?: sortOptions.first().second
     val durationSummary = if (isRu) {
@@ -305,7 +396,7 @@ private fun SortDialog(
                 )
 
                 ExpandableSortBlock(
-                    title = if (isRu) "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438" else "Categories",
+                    title = if (isRu) "\u041c\u0435\u0441\u0442\u043e" else "Place",
                     summary = selectedCategoryLabel,
                     expanded = expandedSection == SortSection.CATEGORY,
                     onToggle = {
@@ -324,6 +415,32 @@ private fun SortDialog(
                             FilterChip(
                                 selected = selectedCategoryId == id,
                                 onClick = { onSelectCategory(id) },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+                }
+
+                ExpandableSortBlock(
+                    title = if (isRu) "\u0413\u0440\u0443\u043f\u043f\u0430 \u043c\u044b\u0448\u0446" else "Muscle group",
+                    summary = selectedMuscleGroupLabel,
+                    expanded = expandedSection == SortSection.MUSCLE_GROUP,
+                    onToggle = {
+                        expandedSection = if (expandedSection == SortSection.MUSCLE_GROUP) {
+                            null
+                        } else {
+                            SortSection.MUSCLE_GROUP
+                        }
+                    }
+                ) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        muscleGroupOptions.forEach { (value, label) ->
+                            FilterChip(
+                                selected = selectedMuscleGroup == value,
+                                onClick = { onSelectMuscleGroup(value) },
                                 label = { Text(label) }
                             )
                         }

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -39,6 +40,9 @@ class HomeViewModel @Inject constructor(
 
     private val _selectedLevel = MutableStateFlow(LevelFilter.ALL)
     val selectedLevel: StateFlow<LevelFilter> = _selectedLevel.asStateFlow()
+
+    private val _selectedMuscleGroup = MutableStateFlow(MuscleGroupFilter.ALL)
+    val selectedMuscleGroup: StateFlow<MuscleGroupFilter> = _selectedMuscleGroup.asStateFlow()
 
     private val _selectedSort = MutableStateFlow(SortOption.DEFAULT)
     val selectedSort: StateFlow<SortOption> = _selectedSort.asStateFlow()
@@ -73,20 +77,34 @@ class HomeViewModel @Inject constructor(
         )
     }
 
-    private val filteredProgramsFlow = combine(
-        baseProgramsFlow,
+    private val filtersFlow = combine(
         _selectedCategoryId,
         _selectedLevel,
+        _selectedMuscleGroup,
         _selectedSort,
         _selectedMaxDuration
-    ) { programs, selectedCategoryId, selectedLevel, selectedSort, selectedMaxDuration ->
+    ) { selectedCategoryId, selectedLevel, selectedMuscleGroup, selectedSort, selectedMaxDuration ->
+        ProgramFilters(
+            selectedCategoryId = selectedCategoryId,
+            selectedLevel = selectedLevel,
+            selectedMuscleGroup = selectedMuscleGroup,
+            selectedSort = selectedSort,
+            selectedMaxDuration = selectedMaxDuration
+        )
+    }
+
+    private val filteredProgramsFlow = combine(
+        baseProgramsFlow,
+        filtersFlow
+    ) { programs, filters ->
         val filtered = programs.filter { program ->
-            val byCategory = selectedCategoryId == null || program.categoryId == selectedCategoryId
-            val byLevel = selectedLevel.matches(program.level)
-            val byDuration = program.durationMinutes <= selectedMaxDuration
-            byCategory && byLevel && byDuration
+            val byCategory = filters.selectedCategoryId == null || program.categoryId == filters.selectedCategoryId
+            val byLevel = filters.selectedLevel.matches(program.level)
+            val byMuscleGroup = filters.selectedMuscleGroup.matches(program)
+            val byDuration = program.durationMinutes <= filters.selectedMaxDuration
+            byCategory && byLevel && byMuscleGroup && byDuration
         }
-        selectedSort.apply(filtered)
+        filters.selectedSort.apply(filtered)
     }
 
     val recommendedPrograms: Flow<List<ProgramEntity>> = filteredProgramsFlow
@@ -138,6 +156,10 @@ class HomeViewModel @Inject constructor(
         _selectedLevel.value = level
     }
 
+    fun selectMuscleGroup(group: MuscleGroupFilter) {
+        _selectedMuscleGroup.value = group
+    }
+
     fun selectSort(sortOption: SortOption) {
         _selectedSort.value = sortOption
     }
@@ -156,6 +178,14 @@ class HomeViewModel @Inject constructor(
         val onlyTranslated: Boolean
     )
 
+    private data class ProgramFilters(
+        val selectedCategoryId: String?,
+        val selectedLevel: LevelFilter,
+        val selectedMuscleGroup: MuscleGroupFilter,
+        val selectedSort: SortOption,
+        val selectedMaxDuration: Int
+    )
+
     enum class LevelFilter {
         ALL,
         BEGINNER,
@@ -169,6 +199,80 @@ class HomeViewModel @Inject constructor(
                 INTERMEDIATE -> rawLevel.equals("intermediate", ignoreCase = true)
                 ADVANCED -> rawLevel.equals("advanced", ignoreCase = true)
                 ALL -> true
+            }
+        }
+    }
+
+    enum class MuscleGroupFilter {
+        ALL,
+        FULL_BODY,
+        ABS,
+        LEGS_GLUTES,
+        CHEST,
+        BACK,
+        SHOULDERS_ARMS,
+        CARDIO,
+        MOBILITY;
+
+        fun matches(program: ProgramEntity): Boolean {
+            if (this == ALL) return true
+            val id = program.id.lowercase()
+            val text = "${program.title} ${program.description}".lowercase()
+            return when (this) {
+                ALL -> true
+                FULL_BODY -> id.contains("30_day") ||
+                    id.contains("full_body") ||
+                    id.contains("first_gym") ||
+                    text.contains("все тело") ||
+                    text.contains("full body")
+                ABS -> id.contains("belly") ||
+                    id.contains("abs") ||
+                    id.contains("core") ||
+                    text.contains("пресс") ||
+                    text.contains("талия") ||
+                    text.contains("core")
+                LEGS_GLUTES -> id.contains("legs") ||
+                    id.contains("glutes") ||
+                    id.contains("lower") ||
+                    text.contains("ног") ||
+                    text.contains("ягод") ||
+                    text.contains("legs") ||
+                    text.contains("glutes")
+                CHEST -> id.contains("chest") ||
+                    text.contains("груд") ||
+                    text.contains("chest")
+                BACK -> id.contains("back") ||
+                    id.contains("posture") ||
+                    text.contains("спин") ||
+                    text.contains("осанк") ||
+                    text.contains("back") ||
+                    text.contains("posture")
+                SHOULDERS_ARMS -> id.contains("shoulders") ||
+                    id.contains("arms") ||
+                    text.contains("плеч") ||
+                    text.contains("рук") ||
+                    text.contains("shoulders") ||
+                    text.contains("arms")
+                CARDIO -> id.contains("cardio") ||
+                    id.contains("weight_loss") ||
+                    id.contains("interval") ||
+                    id.contains("run") ||
+                    id.contains("walk") ||
+                    text.contains("кардио") ||
+                    text.contains("похуд") ||
+                    text.contains("интервал") ||
+                    text.contains("cardio") ||
+                    text.contains("weight loss") ||
+                    text.contains("interval")
+                MOBILITY -> id.contains("warm") ||
+                    id.contains("recovery") ||
+                    id.contains("mobility") ||
+                    text.contains("размин") ||
+                    text.contains("восстанов") ||
+                    text.contains("мобил") ||
+                    text.contains("warm") ||
+                    text.contains("recovery") ||
+                    text.contains("mobility")
             }
         }
     }

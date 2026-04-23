@@ -1,4 +1,4 @@
-﻿package com.ermofit.app.data.repository
+package com.ermofit.app.data.repository
 
 import android.content.Context
 import android.net.Uri
@@ -21,7 +21,6 @@ import java.nio.charset.Charset
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.absoluteValue
 import kotlinx.coroutines.flow.first
 
 @Singleton
@@ -96,9 +95,6 @@ class ExternalWorkoutImportRepository @Inject constructor(
         val categoryTitleRu = linkedMapOf<String, String>()
         val categoryTitleEn = linkedMapOf<String, String>()
         val categoryImageById = linkedMapOf<String, String>()
-        val exerciseLevelRank = linkedMapOf<String, Int>()
-
-
         allIds.forEach { sourceId ->
             val ru = ruById[sourceId]
             val en = enById[sourceId]
@@ -195,18 +191,12 @@ class ExternalWorkoutImportRepository @Inject constructor(
                 updatedAt = now
             )
 
-            exerciseLevelRank[normalizedId] = levelRank(
-                selected.level.orEmpty(),
-                ru?.level.orEmpty(),
-                en?.level.orEmpty()
-            )
-
             if (!imageUrl.isNullOrBlank() && categoryImageById[categoryId].isNullOrBlank()) {
                 categoryImageById[categoryId] = imageUrl
             }
         }
 
-        val categories = (categoryTitleRu.keys + categoryTitleEn.keys)
+        val exerciseCategories = (categoryTitleRu.keys + categoryTitleEn.keys)
             .distinct()
             .sorted()
             .map { categoryId ->
@@ -226,133 +216,447 @@ class ExternalWorkoutImportRepository @Inject constructor(
                     imageUrl = categoryImageById[categoryId]
                 )
             }
+        val categories = (exerciseCategories + programCategories(preferredLangCode))
+            .distinctBy { it.id }
 
-        val programs = mutableListOf<ProgramEntity>()
-        val programTexts = mutableListOf<ProgramTextEntity>()
-        val links = mutableListOf<ProgramExerciseEntity>()
-
-        categories.forEach { category ->
-            val pool = exercises.filter { it.categoryId == category.id }
-            if (pool.size < MIN_EXERCISES_PER_PROGRAM) return@forEach
-
-            val programCount = (pool.size / 10).coerceIn(MIN_PROGRAMS_PER_CATEGORY, MAX_PROGRAMS_PER_CATEGORY)
-            for (index in 0 until programCount) {
-                val rank = index % 3
-                val levelEn = when (rank) {
-                    0 -> "Beginner"
-                    1 -> "Intermediate"
-                    else -> "Advanced"
-                }
-                val candidatePool = pool.filter { exerciseLevelRank[it.id] ?: 0 <= rank }
-                    .ifEmpty { pool }
-                if (candidatePool.size < MIN_EXERCISES_PER_PROGRAM) continue
-
-                val exerciseCount = (6 + (index % 3)).coerceAtMost(candidatePool.size)
-                val selected = pickDeterministic(
-                    source = candidatePool,
-                    seed = "${category.id}_$index",
-                    count = exerciseCount
-                )
-                if (selected.size < MIN_EXERCISES_PER_PROGRAM) continue
-
-                val programId = "file_prog_${category.id}_${(index + 1).toString().padStart(2, '0')}"
-                val backgroundImage = selected.firstOrNull { it.mediaUrl.isNotBlank() }?.mediaUrl
-                    ?: selected.firstNotNullOfOrNull { it.fallbackImageUrl?.takeIf(String::isNotBlank) }
-                    ?: category.imageUrl.orEmpty()
-
-                val durationMinutes = estimateProgramDuration(
-                    levelRank = rank,
-                    exerciseCount = selected.size,
-                    variant = index
-                )
-
-                val focusTags = selected
-                    .flatMap { it.tags }
-                    .map { it.trim() }
-                    .filter { it.isNotBlank() && it != "strength" && it != "cardio" && it != "stretching" }
-                    .distinct()
-                    .take(3)
-
-                val ruTitle = buildProgramTitle(
-                    categoryTitle = categoryTitleRu[category.id].orEmpty().ifBlank { "Тренировка" },
-                    langCode = "ru",
-                    level = levelEn,
-                    variant = index,
-                    durationMinutes = durationMinutes
-                )
-                val enTitle = buildProgramTitle(
-                    categoryTitle = categoryTitleEn[category.id].orEmpty().ifBlank { "Workout" },
-                    langCode = "en",
-                    level = levelEn,
-                    variant = index,
-                    durationMinutes = durationMinutes
-                )
-                val ruDescription = buildProgramDescription(
-                    langCode = "ru",
-                    categoryTitle = categoryTitleRu[category.id].orEmpty().ifBlank { "Тренировка" },
-                    level = levelEn,
-                    exerciseCount = selected.size,
-                    durationMinutes = durationMinutes,
-                    focusTags = focusTags
-                )
-                val enDescription = buildProgramDescription(
-                    langCode = "en",
-                    categoryTitle = categoryTitleEn[category.id].orEmpty().ifBlank { "Workout" },
-                    level = levelEn,
-                    exerciseCount = selected.size,
-                    durationMinutes = durationMinutes,
-                    focusTags = focusTags
-                )
-
-                programs += ProgramEntity(
-                    id = programId,
-                    title = if (preferredLangCode == "ru") ruTitle else enTitle,
-                    description = if (preferredLangCode == "ru") ruDescription else enDescription,
-                    level = levelEn,
-                    durationMinutes = durationMinutes,
-                    categoryId = category.id,
-                    backgroundImageUrl = backgroundImage
-                )
-
-                programTexts += ProgramTextEntity(
-                    programId = programId,
-                    langCode = "ru",
-                    title = ruTitle,
-                    description = ruDescription,
-                    source = TEXT_SOURCE_FILE,
-                    updatedAt = now
-                )
-                programTexts += ProgramTextEntity(
-                    programId = programId,
-                    langCode = "en",
-                    title = enTitle,
-                    description = enDescription,
-                    source = TEXT_SOURCE_FILE,
-                    updatedAt = now
-                )
-
-                selected.forEachIndexed { order, exercise ->
-                    val isTimed = order % 2 == 0
-                    links += ProgramExerciseEntity(
-                        programId = programId,
-                        exerciseId = exercise.id,
-                        orderIndex = order + 1,
-                        defaultDurationSec = if (isTimed) 35 + rank * 5 else 0,
-                        defaultReps = if (isTimed) 0 else 10 + rank * 2
-                    )
-                }
-            }
-        }
+        val programSeed = buildCuratedProgramSeed(
+            preferredLangCode = preferredLangCode,
+            now = now,
+            categories = categories,
+            exercises = exercises
+        )
 
         return ImportBundle(
             categories = categories,
             exercises = exercises,
             exerciseTexts = exerciseTexts,
+            programs = programSeed.programs,
+            programTexts = programSeed.programTexts,
+            programExercises = programSeed.programExercises
+        )
+    }
+
+    private fun buildCuratedProgramSeed(
+        preferredLangCode: String,
+        now: Long,
+        categories: List<CategoryEntity>,
+        exercises: List<ExerciseEntity>
+    ): ProgramSeed {
+        val exerciseById = exercises.associateBy { it.id }
+        val categoryIds = categories.map { it.id }.toSet()
+        val fallbackCategoryId = categories.firstOrNull()?.id ?: CAT_HOME
+        val categoryImageById = categories.associate { it.id to it.imageUrl.orEmpty() }
+
+        val programs = mutableListOf<ProgramEntity>()
+        val programTexts = mutableListOf<ProgramTextEntity>()
+        val links = mutableListOf<ProgramExerciseEntity>()
+
+        curatedProgramTemplates().forEach { template ->
+            val selected = template.exercises.mapNotNull { ref ->
+                exerciseById[fileExerciseId(ref.exerciseId)]?.let { exercise -> ref to exercise }
+            }
+            if (selected.size < MIN_CURATED_EXERCISES_PER_PROGRAM) return@forEach
+
+            val safeCategoryId = template.categoryId.takeIf { it in categoryIds } ?: fallbackCategoryId
+            val backgroundImage = selected.firstOrNull { (_, exercise) -> exercise.mediaUrl.isNotBlank() }
+                ?.second
+                ?.mediaUrl
+                ?: selected.firstNotNullOfOrNull { (_, exercise) ->
+                    exercise.fallbackImageUrl?.takeIf(String::isNotBlank)
+                }
+                ?: categoryImageById[safeCategoryId].orEmpty()
+
+            programs += ProgramEntity(
+                id = template.id,
+                title = if (preferredLangCode == "ru") template.titleRu else template.titleEn,
+                description = if (preferredLangCode == "ru") template.descriptionRu else template.descriptionEn,
+                level = template.level,
+                durationMinutes = template.durationMinutes,
+                categoryId = safeCategoryId,
+                backgroundImageUrl = backgroundImage
+            )
+
+            programTexts += ProgramTextEntity(
+                programId = template.id,
+                langCode = "ru",
+                title = template.titleRu,
+                description = template.descriptionRu,
+                source = TEXT_SOURCE_FILE,
+                updatedAt = now
+            )
+            programTexts += ProgramTextEntity(
+                programId = template.id,
+                langCode = "en",
+                title = template.titleEn,
+                description = template.descriptionEn,
+                source = TEXT_SOURCE_FILE,
+                updatedAt = now
+            )
+
+            selected.forEachIndexed { index, item ->
+                val (ref, exercise) = item
+                links += ProgramExerciseEntity(
+                    programId = template.id,
+                    exerciseId = exercise.id,
+                    orderIndex = index + 1,
+                    defaultDurationSec = ref.durationSec,
+                    defaultReps = ref.reps
+                )
+            }
+        }
+
+        return ProgramSeed(
             programs = programs,
             programTexts = programTexts,
             programExercises = links
         )
     }
+
+    private fun programCategories(languageCode: String): List<CategoryEntity> {
+        val isRu = languageCode == "ru"
+        return listOf(
+            CategoryEntity(
+                id = CAT_HOME,
+                title = if (isRu) "Дом" else "Home",
+                imageUrl = null
+            ),
+            CategoryEntity(
+                id = CAT_GYM,
+                title = if (isRu) "Зал" else "Gym",
+                imageUrl = null
+            ),
+            CategoryEntity(
+                id = CAT_OUTDOOR,
+                title = if (isRu) "Улица" else "Outdoor",
+                imageUrl = null
+            )
+        )
+    }
+
+    private fun curatedProgramTemplates(): List<CuratedProgramTemplate> {
+        return listOf(
+            CuratedProgramTemplate(
+                id = "prog_30_day_home_start",
+                categoryId = CAT_HOME,
+                level = "Beginner",
+                durationMinutes = 30,
+                titleRu = "30 дней: челлендж дома",
+                titleEn = "30-Day Home Challenge",
+                descriptionRu = "Простая домашняя тренировка для первого месяца. Повторяйте 3 раза в неделю, каждую неделю добавляя один круг или 5-10 секунд в планке.",
+                descriptionEn = "A simple home workout for the first month. Repeat it 3 times per week and add one round or 5-10 plank seconds each week.",
+                exercises = listOf(
+                    ref("Cat_Stretch", seconds = 35),
+                    ref("Bodyweight_Squat", reps = 12),
+                    ref("Incline_Push-Up", reps = 10),
+                    ref("Bodyweight_Walking_Lunge", reps = 10),
+                    ref("Butt_Lift_Bridge", reps = 12),
+                    ref("Plank", seconds = 30),
+                    ref("Childs_Pose", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_home_weight_loss",
+                categoryId = CAT_HOME,
+                level = "Beginner",
+                durationMinutes = 30,
+                titleRu = "Похудение дома",
+                titleEn = "Weight Loss at Home",
+                descriptionRu = "Понятная тренировка без оборудования: шаги, приседания, кор и умеренный пульс. Двигайтесь активно, но без гонки за максимумом.",
+                descriptionEn = "A clear no-equipment workout: steps, squats, core, and moderate heart-rate work. Move actively without chasing maximum effort.",
+                exercises = listOf(
+                    ref("Trail_Running_Walking", seconds = 180),
+                    ref("Step-up_with_Knee_Raise", reps = 12),
+                    ref("Bodyweight_Squat", reps = 12),
+                    ref("Mountain_Climbers", seconds = 25),
+                    ref("Plank", seconds = 25),
+                    ref("Childs_Pose", seconds = 35)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_belly_waist",
+                categoryId = CAT_HOME,
+                level = "Beginner",
+                durationMinutes = 25,
+                titleRu = "Живот и талия",
+                titleEn = "Belly and Waist",
+                descriptionRu = "Кор плюс короткое кардио: укрепляем пресс, улучшаем осанку и повышаем общий расход энергии. Работайте спокойно, без рывков шеей и поясницей.",
+                descriptionEn = "Core plus short cardio: strengthen the abs, improve posture, and raise total energy use. Move calmly without yanking the neck or lower back.",
+                exercises = listOf(
+                    ref("Dead_Bug", reps = 12),
+                    ref("Plank", seconds = 30),
+                    ref("Side_Bridge", seconds = 25),
+                    ref("Cross-Body_Crunch", reps = 12),
+                    ref("Mountain_Climbers", seconds = 30),
+                    ref("Childs_Pose", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_home_legs_glutes",
+                categoryId = CAT_HOME,
+                level = "Intermediate",
+                durationMinutes = 35,
+                titleRu = "Ноги и ягодицы дома",
+                titleEn = "Home Legs and Glutes",
+                descriptionRu = "Домашний акцент на ноги и ягодицы: приседания, выпады, мосты и шаги. Держите колени под контролем и не проваливайте поясницу.",
+                descriptionEn = "A home legs-and-glutes focus: squats, lunges, bridges, and step-ups. Keep knees controlled and avoid collapsing through the lower back.",
+                exercises = listOf(
+                    ref("Bodyweight_Squat", reps = 15),
+                    ref("Bodyweight_Walking_Lunge", reps = 12),
+                    ref("Single_Leg_Glute_Bridge", reps = 10),
+                    ref("Step-up_with_Knee_Raise", reps = 12),
+                    ref("Plank", seconds = 35),
+                    ref("90_90_Hamstring", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_no_jump_home_cardio",
+                categoryId = CAT_HOME,
+                level = "Beginner",
+                durationMinutes = 25,
+                titleRu = "Кардио дома без прыжков",
+                titleEn = "No-Jump Home Cardio",
+                descriptionRu = "Для квартиры и спокойного старта: без прыжков, с ровным темпом и простыми движениями. Подходит, когда не хочется шуметь.",
+                descriptionEn = "Apartment-friendly and easy to start: no jumps, steady pace, and simple movements. Good when you need a quiet session.",
+                exercises = listOf(
+                    ref("Trail_Running_Walking", seconds = 180),
+                    ref("Step-up_with_Knee_Raise", reps = 12),
+                    ref("Bodyweight_Squat", reps = 12),
+                    ref("Butt_Lift_Bridge", reps = 14),
+                    ref("Plank", seconds = 30),
+                    ref("Childs_Pose", seconds = 35)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_first_gym_day",
+                categoryId = CAT_GYM,
+                level = "Beginner",
+                durationMinutes = 40,
+                titleRu = "Первый день в зале",
+                titleEn = "First Day at the Gym",
+                descriptionRu = "Без сложных схем: дорожка, тренажеры, спина, грудь, ноги и кор. Выбирайте легкий вес, чтобы оставалось 2-3 повтора в запасе.",
+                descriptionEn = "No complicated plan: treadmill, machines, back, chest, legs, and core. Pick light loads with 2-3 reps left in reserve.",
+                exercises = listOf(
+                    ref("Walking_Treadmill", seconds = 240),
+                    ref("Leg_Press", reps = 12),
+                    ref("Machine_Bench_Press", reps = 10),
+                    ref("Wide-Grip_Lat_Pulldown", reps = 10),
+                    ref("Seated_Leg_Curl", reps = 12),
+                    ref("Plank", seconds = 35),
+                    ref("Calf_Stretch_Hands_Against_Wall", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_gym_dumbbells_full_body",
+                categoryId = CAT_GYM,
+                level = "Intermediate",
+                durationMinutes = 45,
+                titleRu = "Гантели: все тело",
+                titleEn = "Dumbbells: Full Body",
+                descriptionRu = "Тренировка в зале без очереди к тренажерам: ноги, грудь, спина, плечи и кор. Отдыхайте 60-90 секунд между подходами.",
+                descriptionEn = "A gym workout without waiting for machines: legs, chest, back, shoulders, and core. Rest 60-90 seconds between sets.",
+                exercises = listOf(
+                    ref("90_90_Hamstring", seconds = 35),
+                    ref("Dumbbell_Squat", reps = 10),
+                    ref("Dumbbell_Bench_Press", reps = 10),
+                    ref("Bent_Over_Two-Dumbbell_Row", reps = 10),
+                    ref("Dumbbell_Lunges", reps = 10),
+                    ref("Dumbbell_Shoulder_Press", reps = 8),
+                    ref("Plank", seconds = 45)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_gym_barbell_strength",
+                categoryId = CAT_GYM,
+                level = "Advanced",
+                durationMinutes = 55,
+                titleRu = "Сила со штангой",
+                titleEn = "Barbell Strength",
+                descriptionRu = "Для уверенных пользователей зала: присед, жим, тяга, вертикальный жим и подтягивания. Отдыхайте 2-3 минуты и не жертвуйте техникой.",
+                descriptionEn = "For confident gym users: squat, bench, deadlift, overhead press, and pull-ups. Rest 2-3 minutes and do not trade technique for load.",
+                exercises = listOf(
+                    ref("Barbell_Squat", reps = 6),
+                    ref("Barbell_Bench_Press_-_Medium_Grip", reps = 6),
+                    ref("Bent_Over_Barbell_Row", reps = 8),
+                    ref("Barbell_Deadlift", reps = 5),
+                    ref("Barbell_Shoulder_Press", reps = 6),
+                    ref("Pullups", reps = 8),
+                    ref("Plank", seconds = 60)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_back_posture_gym",
+                categoryId = CAT_GYM,
+                level = "Intermediate",
+                durationMinutes = 35,
+                titleRu = "Спина и осанка",
+                titleEn = "Back and Posture",
+                descriptionRu = "Тренировка для спины, плеч и корпуса после сидячего дня. Держите движение плавным, без рывков и запрокидывания головы.",
+                descriptionEn = "Back, shoulders, and core after a long sitting day. Keep the movement smooth, with no jerking or head throwing.",
+                exercises = listOf(
+                    ref("Walking_Treadmill", seconds = 180),
+                    ref("Wide-Grip_Lat_Pulldown", reps = 10),
+                    ref("Face_Pull", reps = 12),
+                    ref("Bent_Over_Two-Dumbbell_Row", reps = 10),
+                    ref("Round_The_World_Shoulder_Stretch", seconds = 40),
+                    ref("Plank", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_gym_chest_triceps",
+                categoryId = CAT_GYM,
+                level = "Intermediate",
+                durationMinutes = 40,
+                titleRu = "Зал: грудь и трицепс",
+                titleEn = "Gym: Chest and Triceps",
+                descriptionRu = "Понятная тренировка верха тела: жим, работа в кроссовере и трицепс. Берите вес, с которым последние повторы тяжелые, но техника не разваливается.",
+                descriptionEn = "A clear upper-body workout: pressing, cable work, and triceps. Choose a load where the last reps are hard but technique stays clean.",
+                exercises = listOf(
+                    ref("Walking_Treadmill", seconds = 180),
+                    ref("Machine_Bench_Press", reps = 10),
+                    ref("Dumbbell_Bench_Press", reps = 10),
+                    ref("Cable_Chest_Press", reps = 12),
+                    ref("Cable_Rope_Overhead_Triceps_Extension", reps = 12),
+                    ref("Plank", seconds = 35)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_gym_back_biceps",
+                categoryId = CAT_GYM,
+                level = "Intermediate",
+                durationMinutes = 40,
+                titleRu = "Зал: спина и бицепс",
+                titleEn = "Gym: Back and Biceps",
+                descriptionRu = "Тяги для спины плюс простая работа на бицепс. Сначала тяните лопатками, потом руками, не раскачивайте корпус.",
+                descriptionEn = "Back pulls plus simple biceps work. Start the pull with your shoulder blades, then your arms, and avoid swinging.",
+                exercises = listOf(
+                    ref("Walking_Treadmill", seconds = 180),
+                    ref("Wide-Grip_Lat_Pulldown", reps = 10),
+                    ref("Bent_Over_Two-Dumbbell_Row", reps = 10),
+                    ref("Face_Pull", reps = 12),
+                    ref("Cable_Hammer_Curls_-_Rope_Attachment", reps = 12),
+                    ref("Side_Bridge", seconds = 30)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_gym_legs_glutes",
+                categoryId = CAT_GYM,
+                level = "Intermediate",
+                durationMinutes = 45,
+                titleRu = "Зал: ноги и ягодицы",
+                titleEn = "Gym: Legs and Glutes",
+                descriptionRu = "Тренировка ног без лишней сложности: жим ногами, выпады, задняя поверхность, ягодицы и икры. Двигайтесь в полном контролируемом диапазоне.",
+                descriptionEn = "A simple lower-body gym workout: leg press, lunges, hamstrings, glutes, and calves. Move through a full controlled range.",
+                exercises = listOf(
+                    ref("Walking_Treadmill", seconds = 180),
+                    ref("Leg_Press", reps = 12),
+                    ref("Dumbbell_Lunges", reps = 10),
+                    ref("Seated_Leg_Curl", reps = 12),
+                    ref("Barbell_Hip_Thrust", reps = 10),
+                    ref("Standing_Calf_Raises", reps = 15),
+                    ref("90_90_Hamstring", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_gym_shoulders_arms",
+                categoryId = CAT_GYM,
+                level = "Intermediate",
+                durationMinutes = 40,
+                titleRu = "Зал: плечи и руки",
+                titleEn = "Gym: Shoulders and Arms",
+                descriptionRu = "Акцент на плечи, бицепс и трицепс. Не задирайте плечи к ушам и не раскачивайте корпус ради большего веса.",
+                descriptionEn = "Shoulders, biceps, and triceps focus. Do not shrug your shoulders up or swing the body just to lift more weight.",
+                exercises = listOf(
+                    ref("Walking_Treadmill", seconds = 180),
+                    ref("Dumbbell_Shoulder_Press", reps = 10),
+                    ref("Cable_Seated_Lateral_Raise", reps = 12),
+                    ref("Face_Pull", reps = 12),
+                    ref("High_Cable_Curls", reps = 12),
+                    ref("Cable_Rope_Overhead_Triceps_Extension", reps = 12),
+                    ref("Plank", seconds = 35)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_gym_abs_core",
+                categoryId = CAT_GYM,
+                level = "Beginner",
+                durationMinutes = 30,
+                titleRu = "Зал: пресс",
+                titleEn = "Gym: Abs",
+                descriptionRu = "Пресс и стабилизация корпуса на тренажерах и коврике. Работайте медленно: качество движения важнее количества повторов.",
+                descriptionEn = "Abs and trunk stability with machines and mat work. Move slowly: quality beats rep count.",
+                exercises = listOf(
+                    ref("Walking_Treadmill", seconds = 180),
+                    ref("Ab_Crunch_Machine", reps = 12),
+                    ref("Cable_Crunch", reps = 12),
+                    ref("Plank", seconds = 35),
+                    ref("Side_Bridge", seconds = 25),
+                    ref("Dead_Bug", reps = 12)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_outdoor_walk_tone",
+                categoryId = CAT_OUTDOOR,
+                level = "Beginner",
+                durationMinutes = 30,
+                titleRu = "Улица: ходьба и тонус",
+                titleEn = "Outdoor: Walk and Tone",
+                descriptionRu = "Прогулка плюс простые упражнения с собственным весом. Хороший вариант для начала, когда дома тренироваться скучно.",
+                descriptionEn = "A walk plus simple bodyweight work. A good starter option when home workouts feel boring.",
+                exercises = listOf(
+                    ref("Trail_Running_Walking", seconds = 300),
+                    ref("Step-up_with_Knee_Raise", reps = 12),
+                    ref("Bodyweight_Walking_Lunge", reps = 10),
+                    ref("Plank", seconds = 30),
+                    ref("90_90_Hamstring", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_outdoor_run_start",
+                categoryId = CAT_OUTDOOR,
+                level = "Beginner",
+                durationMinutes = 30,
+                titleRu = "Беговой старт",
+                titleEn = "Running Start",
+                descriptionRu = "Легкий бег или быстрая ходьба с короткой силовой частью. Не бегите через боль: темп должен оставаться разговорным.",
+                descriptionEn = "Easy jogging or brisk walking with a short strength block. Do not run through pain; keep the pace conversational.",
+                exercises = listOf(
+                    ref("Trail_Running_Walking", seconds = 360),
+                    ref("Bodyweight_Squat", reps = 12),
+                    ref("Step-up_with_Knee_Raise", reps = 10),
+                    ref("Side_Bridge", seconds = 25),
+                    ref("Calf_Stretch_Hands_Against_Wall", seconds = 40)
+                )
+            ),
+            CuratedProgramTemplate(
+                id = "prog_outdoor_interval_challenge",
+                categoryId = CAT_OUTDOOR,
+                level = "Intermediate",
+                durationMinutes = 35,
+                titleRu = "Интервальный челлендж",
+                titleEn = "Interval Challenge",
+                descriptionRu = "Динамичная уличная тренировка: короткие интервалы, прыжки, корпус и восстановление. Подходит, если колени спокойно переносят прыжковые движения.",
+                descriptionEn = "A dynamic outdoor workout: short intervals, jumps, core, and recovery. Use it if your knees tolerate jumping well.",
+                exercises = listOf(
+                    ref("Fast_Skipping", seconds = 40),
+                    ref("Mountain_Climbers", seconds = 40),
+                    ref("Freehand_Jump_Squat", reps = 12),
+                    ref("Pushups", reps = 10),
+                    ref("Lateral_Bound", seconds = 30),
+                    ref("Plank", seconds = 45),
+                    ref("Childs_Pose", seconds = 40)
+                )
+            )
+        )
+    }
+    private fun ref(exerciseId: String, seconds: Int = 0, reps: Int = 0): CuratedExerciseRef {
+        return CuratedExerciseRef(
+            exerciseId = exerciseId,
+            durationSec = seconds,
+            reps = reps
+        )
+    }
+
+    private fun fileExerciseId(sourceId: String): String = "file_$sourceId"
 
     private fun readExercises(assetName: String): List<BdExercise> {
         val raw = context.assets.open(assetName).bufferedReader().use { it.readText() }
@@ -360,18 +664,6 @@ class ExternalWorkoutImportRepository @Inject constructor(
         val rows = gson.fromJson<List<BdExercise>>(raw, type).orEmpty()
         if (assetName != RU_ASSET) return rows
         return rows.map(::decodeRuRowIfNeeded)
-    }
-
-    private fun readSeedProgramBackgrounds(assetName: String): List<String> {
-        val raw = runCatching {
-            context.assets.open(assetName).bufferedReader().use { it.readText() }
-        }.getOrNull() ?: return emptyList()
-
-        val payload = gson.fromJson(raw, ErmoSeedPayload::class.java) ?: return emptyList()
-        return payload.programs.orEmpty()
-            .mapNotNull { it.backgroundImageUrl?.trim() }
-            .filter { it.isNotBlank() }
-            .distinct()
     }
 
     private fun buildDescription(row: BdExercise?, fallback: String): String {
@@ -418,115 +710,6 @@ class ExternalWorkoutImportRepository @Inject constructor(
             .distinct()
             .take(10)
             .ifEmpty { listOf(canonicalCategory) }
-    }
-
-    private fun buildProgramTitle(
-        categoryTitle: String,
-        langCode: String,
-        level: String,
-        variant: Int,
-        durationMinutes: Int
-    ): String {
-        if (langCode == "ru") {
-            val prefix = when (level.lowercase(Locale.ROOT)) {
-                "beginner" -> "\u041b\u0435\u0433\u043a\u0438\u0439 \u0441\u0442\u0430\u0440\u0442"
-                "intermediate" -> "\u0420\u0430\u0431\u043e\u0447\u0438\u0439 \u0442\u0435\u043c\u043f"
-                else -> "\u0418\u043d\u0442\u0435\u043d\u0441\u0438\u0432"
-            }
-            val suffix = when (variant % 4) {
-                0 -> "\u0431\u0430\u0437\u0430"
-                1 -> "\u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441"
-                2 -> "\u0432\u044b\u043d\u043e\u0441\u043b\u0438\u0432\u043e\u0441\u0442\u044c"
-                else -> "\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c"
-            }
-            return "$prefix: $categoryTitle - $suffix ($durationMinutes \u043c\u0438\u043d)"
-        }
-
-        val prefix = when (level.lowercase(Locale.ROOT)) {
-            "beginner" -> "Easy Start"
-            "intermediate" -> "Steady Pace"
-            else -> "Power Session"
-        }
-        val suffix = when (variant % 4) {
-            0 -> "base"
-            1 -> "progress"
-            2 -> "endurance"
-            else -> "control"
-        }
-        return "$prefix: $categoryTitle • $suffix (${durationMinutes}m)"
-    }
-
-    private fun buildProgramDescription(
-        langCode: String,
-        categoryTitle: String,
-        level: String,
-        exerciseCount: Int,
-        durationMinutes: Int,
-        focusTags: List<String>
-    ): String {
-        val levelLabelRu = when (level.lowercase(Locale.ROOT)) {
-            "beginner" -> "\u043d\u043e\u0432\u0438\u0447\u043e\u043a"
-            "intermediate" -> "\u0441\u0440\u0435\u0434\u043d\u0438\u0439"
-            else -> "\u043f\u0440\u043e\u0434\u0432\u0438\u043d\u0443\u0442\u044b\u0439"
-        }
-        val focus = focusTags
-            .map { it.replace("-", " ") }
-            .take(3)
-            .joinToString(", ")
-            .ifBlank {
-                if (langCode == "ru") {
-                    "\u043e\u0431\u0449\u0430\u044f \u0444\u0438\u0437\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430"
-                } else {
-                    "general fitness"
-                }
-            }
-
-        return if (langCode == "ru") {
-            "\u041f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0430 \"$categoryTitle\", \u0443\u0440\u043e\u0432\u0435\u043d\u044c $levelLabelRu: $exerciseCount \u0443\u043f\u0440\u0430\u0436\u043d\u0435\u043d\u0438\u0439, \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e $durationMinutes \u043c\u0438\u043d\u0443\u0442. \u0410\u043a\u0446\u0435\u043d\u0442: $focus. \u041d\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u0430 \u043f\u043e \u043a\u0440\u0443\u0433\u0430\u043c \u0441 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u0435\u043c \u0442\u0435\u0445\u043d\u0438\u043a\u0438."
-        } else {
-            "Structured $categoryTitle plan for $level level: $exerciseCount exercises, around $durationMinutes minutes. Focus: $focus. The workload is split into rounds with controlled technique and pacing."
-        }
-    }
-
-    private fun estimateProgramDuration(
-        levelRank: Int,
-        exerciseCount: Int,
-        variant: Int
-    ): Int {
-        val perExercise = when (levelRank) {
-            0 -> 3
-            1 -> 4
-            else -> 5
-        }
-        return (exerciseCount * perExercise + 5 + (variant % 3)).coerceIn(15, 60)
-    }
-
-    private fun pickDeterministic(
-        source: List<ExerciseEntity>,
-        seed: String,
-        count: Int
-    ): List<ExerciseEntity> {
-        if (source.isEmpty() || count <= 0) return emptyList()
-        val sorted = source.sortedBy { it.id }
-        val start = positiveIndex(seed.hashCode(), sorted.size)
-        val rotated = sorted.drop(start) + sorted.take(start)
-        return rotated.take(count)
-    }
-
-    private fun levelRank(primary: String, ru: String, en: String): Int {
-        val raw = listOf(primary, ru, en)
-            .joinToString(" ")
-            .lowercase(Locale.ROOT)
-        return when {
-            raw.contains("expert") ||
-                raw.contains("advanced") ||
-                raw.contains("\u044d\u043a\u0441\u043f\u0435\u0440\u0442") ||
-                raw.contains("\u043f\u0440\u043e\u0434\u0432\u0438\u043d") -> 2
-            raw.contains("intermediate") ||
-                raw.contains("\u043f\u0440\u043e\u043c\u0435\u0436") ||
-                raw.contains("\u0441\u0440\u0435\u0434\u043d") -> 1
-            else -> 0
-        }
     }
 
     private fun canonicalCategory(
@@ -655,11 +838,6 @@ class ExternalWorkoutImportRepository @Inject constructor(
             .take(40)
     }
 
-    private fun positiveIndex(value: Int, bound: Int): Int {
-        val positive = value.absoluteValue
-        return if (bound == 0) 0 else positive % bound
-    }
-
     private fun firstNotBlank(vararg sources: List<String>): String {
         sources.forEach { source ->
             source.firstOrNull { it.isNotBlank() }?.let { return it.trim() }
@@ -697,12 +875,28 @@ class ExternalWorkoutImportRepository @Inject constructor(
         @SerializedName("images") val images: List<String>? = emptyList()
     )
 
-    private data class ErmoSeedPayload(
-        @SerializedName("programs") val programs: List<ErmoSeedProgram>? = emptyList()
+    private data class CuratedProgramTemplate(
+        val id: String,
+        val categoryId: String,
+        val level: String,
+        val durationMinutes: Int,
+        val titleRu: String,
+        val titleEn: String,
+        val descriptionRu: String,
+        val descriptionEn: String,
+        val exercises: List<CuratedExerciseRef>
     )
 
-    private data class ErmoSeedProgram(
-        @SerializedName("backgroundImageUrl") val backgroundImageUrl: String? = null
+    private data class CuratedExerciseRef(
+        val exerciseId: String,
+        val durationSec: Int,
+        val reps: Int
+    )
+
+    private data class ProgramSeed(
+        val programs: List<ProgramEntity>,
+        val programTexts: List<ProgramTextEntity>,
+        val programExercises: List<ProgramExerciseEntity>
     )
 
     private data class ImportBundle(
@@ -717,11 +911,11 @@ class ExternalWorkoutImportRepository @Inject constructor(
     private companion object {
         const val RU_ASSET = "bd_ru.json"
         const val EN_ASSET = "bd_en.json"
-        const val ERMOFIT_SEED_ASSET = "ermofit_seed.json"
-        const val BASE_IMPORT_VERSION = 35
-        const val MIN_EXERCISES_PER_PROGRAM = 4
-        const val MIN_PROGRAMS_PER_CATEGORY = 4
-        const val MAX_PROGRAMS_PER_CATEGORY = 18
+        const val BASE_IMPORT_VERSION = 38
+        const val MIN_CURATED_EXERCISES_PER_PROGRAM = 4
+        const val CAT_HOME = "cat_program_home"
+        const val CAT_GYM = "cat_program_gym"
+        const val CAT_OUTDOOR = "cat_program_outdoor"
         const val FREE_EXERCISE_DB_BASE =
             "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises"
         const val TEXT_SOURCE_FILE = "file_bd"

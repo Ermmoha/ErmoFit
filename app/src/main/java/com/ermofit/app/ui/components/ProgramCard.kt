@@ -42,6 +42,7 @@ fun ProgramCard(
     program: ProgramEntity,
     onClick: () -> Unit,
     titleOverride: String? = null,
+    subtitleOverride: String? = null,
     modifier: Modifier = Modifier
 ) {
     val strings = appStrings()
@@ -148,7 +149,7 @@ fun ProgramCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = if (isRu) {
+                    text = subtitleOverride?.takeIf { it.isNotBlank() } ?: if (isRu) {
                         "\u0422\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u0447\u043d\u0430\u044f \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0430"
                     } else {
                         "ErmoFit Program"

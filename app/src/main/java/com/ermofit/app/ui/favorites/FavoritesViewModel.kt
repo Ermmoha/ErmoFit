@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ermofit.app.data.local.entity.ExerciseEntity
 import com.ermofit.app.data.local.entity.ProgramEntity
+import com.ermofit.app.data.model.CustomTrainingProgram
+import com.ermofit.app.data.repository.CustomProgramsRepository
 import com.ermofit.app.data.repository.FavoritesRepository
 import com.ermofit.app.data.repository.LocalDataRepository
 import com.ermofit.app.domain.model.ResolvedExerciseText
@@ -15,6 +17,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -22,6 +25,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class FavoritesUiState(
+    val customPrograms: List<CustomTrainingProgram> = emptyList(),
     val programs: List<ProgramEntity> = emptyList(),
     val programTexts: Map<String, ResolvedProgramText> = emptyMap(),
     val exercises: List<ExerciseEntity> = emptyList(),
@@ -32,6 +36,7 @@ data class FavoritesUiState(
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val favoritesRepository: FavoritesRepository,
+    private val customProgramsRepository: CustomProgramsRepository,
     private val localDataRepository: LocalDataRepository,
     exerciseTextResolver: ExerciseTextResolver,
     programTextResolver: ProgramTextResolver
@@ -76,14 +81,18 @@ class FavoritesViewModel @Inject constructor(
 
     private val favoriteProgramTextsFlow = programTextResolver.observeTextsForPrograms(favoriteProgramsFlow)
     private val favoriteExerciseTextsFlow = exerciseTextResolver.observeTextsForExercises(favoriteExercisesFlow)
+    private val customProgramsFlow = customProgramsRepository.observePrograms()
+        .catch { emit(emptyList()) }
 
     val uiState: StateFlow<FavoritesUiState> = combine(
+        customProgramsFlow,
         favoriteProgramsFlow,
         favoriteProgramTextsFlow,
         favoriteExercisesFlow,
         favoriteExerciseTextsFlow
-    ) { programs, programTexts, exercises, exerciseTexts ->
+    ) { customPrograms, programs, programTexts, exercises, exerciseTexts ->
         FavoritesUiState(
+            customPrograms = customPrograms,
             programs = programs,
             programTexts = programTexts,
             exercises = exercises,

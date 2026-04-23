@@ -18,7 +18,6 @@ import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.abs
 
 @Singleton
 class SeedImportRepository @Inject constructor(
@@ -88,73 +87,42 @@ class SeedImportRepository @Inject constructor(
         exercises: List<ExerciseEntity>,
         languageCode: String
     ): GeneratedTrainings {
-        val goals = listOf(
-            TrainingGoals.STRENGTH,
-            TrainingGoals.FATBURN,
-            TrainingGoals.ENDURANCE,
-            TrainingGoals.MOBILITY
-        )
-        val levels = listOf(
-            TrainingLevels.BEGINNER,
-            TrainingLevels.INTERMEDIATE,
-            TrainingLevels.ADVANCED
-        )
-
+        val exerciseById = exercises.associateBy { it.id }
         val trainings = mutableListOf<TrainingEntity>()
         val links = mutableListOf<TrainingExerciseEntity>()
 
-        goals.forEach { goal ->
-            levels.forEach { level ->
-                val candidates = exercises.filter { exercise ->
-                    levelRank(exercise.level) <= levelRank(level) && matchesGoal(exercise, goal)
-                }
+        curatedTrainingTemplates().forEach { template ->
+            val selected = template.exercises.mapNotNull { ref ->
+                exerciseById[ref.exerciseId]?.let { exercise -> ref to exercise }
+            }
+            if (selected.size < MIN_EXERCISES_PER_TRAINING) return@forEach
 
-                val fallback = exercises.filter { exercise ->
-                    levelRank(exercise.level) <= levelRank(level)
-                }
+            val equipment = selected
+                .flatMap { (_, exercise) -> exercise.equipmentTags }
+                .filterNot { it == EquipmentTags.OTHER }
+                .distinct()
+                .ifEmpty { listOf(EquipmentTags.NO_EQUIPMENT) }
 
-                val pool = when {
-                    candidates.size >= minExercisesForGoal(goal) -> candidates
-                    fallback.size >= minExercisesForGoal(goal) -> fallback
-                    else -> exercises
-                }
+            trainings += TrainingEntity(
+                id = template.id,
+                title = if (languageCode == "ru") template.titleRu else template.titleEn,
+                description = if (languageCode == "ru") template.descriptionRu else template.descriptionEn,
+                goal = template.goal,
+                level = template.level,
+                durationMinutes = template.durationMinutes,
+                equipmentRequired = equipment,
+                isGenerated = false
+            )
 
-                val count = targetExerciseCount(goal).coerceAtMost(pool.size)
-                if (count <= 0) return@forEach
-
-                val selected = selectDeterministic(
-                    source = pool,
-                    count = count,
-                    salt = "$goal:$level"
+            selected.forEachIndexed { index, item ->
+                val (ref, exercise) = item
+                links += TrainingExerciseEntity(
+                    trainingId = template.id,
+                    exerciseId = exercise.id,
+                    orderIndex = index + 1,
+                    customDurationSec = ref.durationSec,
+                    customReps = ref.reps
                 )
-
-                val trainingId = "seed_${goal}_$level"
-                val equipment = selected
-                    .flatMap { it.equipmentTags }
-                    .distinct()
-                    .ifEmpty { listOf(EquipmentTags.NO_EQUIPMENT) }
-
-                trainings += TrainingEntity(
-                    id = trainingId,
-                    title = trainingTitle(goal, level, languageCode),
-                    description = trainingDescription(goal, level, languageCode),
-                    goal = goal,
-                    level = level,
-                    durationMinutes = durationForGoal(goal),
-                    equipmentRequired = equipment,
-                    isGenerated = false
-                )
-
-                selected.forEachIndexed { index, exercise ->
-                    val timing = exerciseTiming(goal, exercise)
-                    links += TrainingExerciseEntity(
-                        trainingId = trainingId,
-                        exerciseId = exercise.id,
-                        orderIndex = index + 1,
-                        customDurationSec = timing.first,
-                        customReps = timing.second
-                    )
-                }
             }
         }
 
@@ -164,147 +132,328 @@ class SeedImportRepository @Inject constructor(
         )
     }
 
-    private fun selectDeterministic(
-        source: List<ExerciseEntity>,
-        count: Int,
-        salt: String
-    ): List<ExerciseEntity> {
-        if (source.isEmpty() || count <= 0) return emptyList()
-        val sorted = source.sortedBy { it.id }
-        val start = abs(salt.hashCode()) % sorted.size
-        val rotated = sorted.drop(start) + sorted.take(start)
-        return rotated.take(count)
+    private fun curatedTrainingTemplates(): List<TrainingTemplate> {
+        return listOf(
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.STRENGTH}_${TrainingLevels.BEGINNER}",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.BEGINNER,
+                durationMinutes = 30,
+                titleRu = "30 дней: челлендж дома",
+                titleEn = "30-Day Home Challenge",
+                descriptionRu = "Простая домашняя тренировка для первого месяца. Повторяйте 3 раза в неделю, каждую неделю добавляя один круг или 5-10 секунд в планке.",
+                descriptionEn = "A simple home workout for the first month. Repeat it 3 times per week and add one round or 5-10 plank seconds each week.",
+                exercises = listOf(
+                    trainingRef("Cat_Stretch", seconds = 35),
+                    trainingRef("Bodyweight_Squat", reps = 12),
+                    trainingRef("Incline_Push-Up", reps = 10),
+                    trainingRef("Bodyweight_Walking_Lunge", reps = 10),
+                    trainingRef("Butt_Lift_Bridge", reps = 12),
+                    trainingRef("Plank", seconds = 30),
+                    trainingRef("Childs_Pose", seconds = 40)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.STRENGTH}_${TrainingLevels.INTERMEDIATE}",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 45,
+                titleRu = "Гантели: все тело",
+                titleEn = "Dumbbells: Full Body",
+                descriptionRu = "Понятная тренировка с гантелями: ноги, грудь, спина, плечи и кор. Отдыхайте 60-90 секунд и оставляйте 1-2 повтора в запасе.",
+                descriptionEn = "A clear dumbbell workout: legs, chest, back, shoulders, and core. Rest 60-90 seconds and keep 1-2 reps in reserve.",
+                exercises = listOf(
+                    trainingRef("90_90_Hamstring", seconds = 35),
+                    trainingRef("Dumbbell_Squat", reps = 10),
+                    trainingRef("Dumbbell_Bench_Press", reps = 10),
+                    trainingRef("Bent_Over_Two-Dumbbell_Row", reps = 10),
+                    trainingRef("Dumbbell_Lunges", reps = 10),
+                    trainingRef("Dumbbell_Shoulder_Press", reps = 8),
+                    trainingRef("Plank", seconds = 45)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.STRENGTH}_${TrainingLevels.ADVANCED}",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.ADVANCED,
+                durationMinutes = 55,
+                titleRu = "Сила со штангой",
+                titleEn = "Barbell Strength",
+                descriptionRu = "Для уверенных пользователей зала: присед, жим, тяга, вертикальный жим и подтягивания. Отдыхайте 2-3 минуты и не жертвуйте техникой.",
+                descriptionEn = "For confident gym users: squat, bench, deadlift, overhead press, and pull-ups. Rest 2-3 minutes and do not trade technique for load.",
+                exercises = listOf(
+                    trainingRef("Barbell_Squat", reps = 6),
+                    trainingRef("Barbell_Bench_Press_-_Medium_Grip", reps = 6),
+                    trainingRef("Bent_Over_Barbell_Row", reps = 8),
+                    trainingRef("Barbell_Deadlift", reps = 5),
+                    trainingRef("Barbell_Shoulder_Press", reps = 6),
+                    trainingRef("Pullups", reps = 8),
+                    trainingRef("Plank", seconds = 60)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_gym_chest_triceps",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 40,
+                titleRu = "Зал: грудь и трицепс",
+                titleEn = "Gym: Chest and Triceps",
+                descriptionRu = "Понятная тренировка верха тела: жим, работа в кроссовере и трицепс. Берите вес, с которым последние повторы тяжелые, но техника не разваливается.",
+                descriptionEn = "A clear upper-body workout: pressing, cable work, and triceps. Choose a load where the last reps are hard but technique stays clean.",
+                exercises = listOf(
+                    trainingRef("Walking_Treadmill", seconds = 180),
+                    trainingRef("Machine_Bench_Press", reps = 10),
+                    trainingRef("Dumbbell_Bench_Press", reps = 10),
+                    trainingRef("Cable_Chest_Press", reps = 12),
+                    trainingRef("Cable_Rope_Overhead_Triceps_Extension", reps = 12),
+                    trainingRef("Plank", seconds = 35)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_gym_back_biceps",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 40,
+                titleRu = "Зал: спина и бицепс",
+                titleEn = "Gym: Back and Biceps",
+                descriptionRu = "Тяги для спины плюс простая работа на бицепс. Сначала тяните лопатками, потом руками, не раскачивайте корпус.",
+                descriptionEn = "Back pulls plus simple biceps work. Start the pull with your shoulder blades, then your arms, and avoid swinging.",
+                exercises = listOf(
+                    trainingRef("Walking_Treadmill", seconds = 180),
+                    trainingRef("Wide-Grip_Lat_Pulldown", reps = 10),
+                    trainingRef("Bent_Over_Two-Dumbbell_Row", reps = 10),
+                    trainingRef("Face_Pull", reps = 12),
+                    trainingRef("Cable_Hammer_Curls_-_Rope_Attachment", reps = 12),
+                    trainingRef("Side_Bridge", seconds = 30)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_gym_legs_glutes",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 45,
+                titleRu = "Зал: ноги и ягодицы",
+                titleEn = "Gym: Legs and Glutes",
+                descriptionRu = "Тренировка ног без лишней сложности: жим ногами, выпады, задняя поверхность, ягодицы и икры. Двигайтесь в полном контролируемом диапазоне.",
+                descriptionEn = "A simple lower-body gym workout: leg press, lunges, hamstrings, glutes, and calves. Move through a full controlled range.",
+                exercises = listOf(
+                    trainingRef("Walking_Treadmill", seconds = 180),
+                    trainingRef("Leg_Press", reps = 12),
+                    trainingRef("Dumbbell_Lunges", reps = 10),
+                    trainingRef("Seated_Leg_Curl", reps = 12),
+                    trainingRef("Barbell_Hip_Thrust", reps = 10),
+                    trainingRef("Standing_Calf_Raises", reps = 15),
+                    trainingRef("90_90_Hamstring", seconds = 40)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_gym_shoulders_arms",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 40,
+                titleRu = "Зал: плечи и руки",
+                titleEn = "Gym: Shoulders and Arms",
+                descriptionRu = "Акцент на плечи, бицепс и трицепс. Не задирайте плечи к ушам и не раскачивайте корпус ради большего веса.",
+                descriptionEn = "Shoulders, biceps, and triceps focus. Do not shrug your shoulders up or swing the body just to lift more weight.",
+                exercises = listOf(
+                    trainingRef("Walking_Treadmill", seconds = 180),
+                    trainingRef("Dumbbell_Shoulder_Press", reps = 10),
+                    trainingRef("Cable_Seated_Lateral_Raise", reps = 12),
+                    trainingRef("Face_Pull", reps = 12),
+                    trainingRef("High_Cable_Curls", reps = 12),
+                    trainingRef("Cable_Rope_Overhead_Triceps_Extension", reps = 12),
+                    trainingRef("Plank", seconds = 35)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_gym_abs_core",
+                goal = TrainingGoals.STRENGTH,
+                level = TrainingLevels.BEGINNER,
+                durationMinutes = 30,
+                titleRu = "Зал: пресс",
+                titleEn = "Gym: Abs",
+                descriptionRu = "Пресс и стабилизация корпуса на тренажерах и коврике. Работайте медленно: качество движения важнее количества повторов.",
+                descriptionEn = "Abs and trunk stability with machines and mat work. Move slowly: quality beats rep count.",
+                exercises = listOf(
+                    trainingRef("Walking_Treadmill", seconds = 180),
+                    trainingRef("Ab_Crunch_Machine", reps = 12),
+                    trainingRef("Cable_Crunch", reps = 12),
+                    trainingRef("Plank", seconds = 35),
+                    trainingRef("Side_Bridge", seconds = 25),
+                    trainingRef("Dead_Bug", reps = 12)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.FATBURN}_${TrainingLevels.BEGINNER}",
+                goal = TrainingGoals.FATBURN,
+                level = TrainingLevels.BEGINNER,
+                durationMinutes = 30,
+                titleRu = "Похудение дома",
+                titleEn = "Weight Loss at Home",
+                descriptionRu = "Без оборудования: шаги, приседания, кор и умеренный пульс. Двигайтесь активно, но без гонки за максимумом.",
+                descriptionEn = "No equipment: steps, squats, core, and moderate heart-rate work. Move actively without chasing maximum effort.",
+                exercises = listOf(
+                    trainingRef("Trail_Running_Walking", seconds = 180),
+                    trainingRef("Step-up_with_Knee_Raise", reps = 12),
+                    trainingRef("Bodyweight_Squat", reps = 12),
+                    trainingRef("Mountain_Climbers", seconds = 25),
+                    trainingRef("Plank", seconds = 25),
+                    trainingRef("Childs_Pose", seconds = 35)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.FATBURN}_${TrainingLevels.INTERMEDIATE}",
+                goal = TrainingGoals.FATBURN,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 25,
+                titleRu = "Живот и талия",
+                titleEn = "Belly and Waist",
+                descriptionRu = "Кор плюс короткое кардио: укрепляем пресс, улучшаем осанку и повышаем общий расход энергии. Работайте без рывков шеей и поясницей.",
+                descriptionEn = "Core plus short cardio: strengthen the abs, improve posture, and raise total energy use. Move without yanking the neck or lower back.",
+                exercises = listOf(
+                    trainingRef("Dead_Bug", reps = 12),
+                    trainingRef("Plank", seconds = 30),
+                    trainingRef("Side_Bridge", seconds = 25),
+                    trainingRef("Cross-Body_Crunch", reps = 12),
+                    trainingRef("Mountain_Climbers", seconds = 30),
+                    trainingRef("Childs_Pose", seconds = 40)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.FATBURN}_${TrainingLevels.ADVANCED}",
+                goal = TrainingGoals.FATBURN,
+                level = TrainingLevels.ADVANCED,
+                durationMinutes = 35,
+                titleRu = "Интервальный челлендж",
+                titleEn = "Interval Challenge",
+                descriptionRu = "Динамичная тренировка: короткие интервалы, прыжки, корпус и восстановление. Подходит, если колени спокойно переносят прыжковые движения.",
+                descriptionEn = "A dynamic workout: short intervals, jumps, core, and recovery. Use it if your knees tolerate jumping well.",
+                exercises = listOf(
+                    trainingRef("Fast_Skipping", seconds = 40),
+                    trainingRef("Mountain_Climbers", seconds = 40),
+                    trainingRef("Freehand_Jump_Squat", reps = 12),
+                    trainingRef("Pushups", reps = 10),
+                    trainingRef("Lateral_Bound", seconds = 30),
+                    trainingRef("Plank", seconds = 45),
+                    trainingRef("Childs_Pose", seconds = 40)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.ENDURANCE}_${TrainingLevels.BEGINNER}",
+                goal = TrainingGoals.ENDURANCE,
+                level = TrainingLevels.BEGINNER,
+                durationMinutes = 30,
+                titleRu = "Улица: ходьба и тонус",
+                titleEn = "Outdoor: Walk and Tone",
+                descriptionRu = "Прогулка плюс простые упражнения с собственным весом. Хороший вариант для начала, когда дома тренироваться скучно.",
+                descriptionEn = "A walk plus simple bodyweight work. A good starter option when home workouts feel boring.",
+                exercises = listOf(
+                    trainingRef("Trail_Running_Walking", seconds = 300),
+                    trainingRef("Step-up_with_Knee_Raise", reps = 12),
+                    trainingRef("Bodyweight_Walking_Lunge", reps = 10),
+                    trainingRef("Plank", seconds = 30),
+                    trainingRef("90_90_Hamstring", seconds = 40)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.ENDURANCE}_${TrainingLevels.INTERMEDIATE}",
+                goal = TrainingGoals.ENDURANCE,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 30,
+                titleRu = "Беговой старт",
+                titleEn = "Running Start",
+                descriptionRu = "Легкий бег или быстрая ходьба с короткой силовой частью. Не бегите через боль: темп должен оставаться разговорным.",
+                descriptionEn = "Easy jogging or brisk walking with a short strength block. Do not run through pain; keep the pace conversational.",
+                exercises = listOf(
+                    trainingRef("Trail_Running_Walking", seconds = 360),
+                    trainingRef("Bodyweight_Squat", reps = 12),
+                    trainingRef("Step-up_with_Knee_Raise", reps = 10),
+                    trainingRef("Side_Bridge", seconds = 25),
+                    trainingRef("Calf_Stretch_Hands_Against_Wall", seconds = 40)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.ENDURANCE}_${TrainingLevels.ADVANCED}",
+                goal = TrainingGoals.ENDURANCE,
+                level = TrainingLevels.ADVANCED,
+                durationMinutes = 50,
+                titleRu = "Кардио-выносливость",
+                titleEn = "Cardio Endurance",
+                descriptionRu = "Длиннее и ровнее: кардио-блоки плюс простая поддержка ног и корпуса. Главная цель - устойчивый пульс без провалов техники.",
+                descriptionEn = "Longer and steadier: cardio blocks plus simple leg and core support. The goal is sustained effort without technique breakdown.",
+                exercises = listOf(
+                    trainingRef("Running_Treadmill", seconds = 360),
+                    trainingRef("Rowing_Stationary", seconds = 300),
+                    trainingRef("Rope_Jumping", seconds = 90),
+                    trainingRef("Dumbbell_Lunges", reps = 12),
+                    trainingRef("Mountain_Climbers", seconds = 50),
+                    trainingRef("Plank", seconds = 60),
+                    trainingRef("Calf_Stretch_Hands_Against_Wall", seconds = 45)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.MOBILITY}_${TrainingLevels.BEGINNER}",
+                goal = TrainingGoals.MOBILITY,
+                level = TrainingLevels.BEGINNER,
+                durationMinutes = 15,
+                titleRu = "Разминка утром",
+                titleEn = "Morning Warm-Up",
+                descriptionRu = "Мягкая короткая разминка для спины, бедер, плеч и голеностопа. Двигайтесь без боли, без пружинящих рывков и с ровным дыханием.",
+                descriptionEn = "A gentle short warm-up for back, hips, shoulders, and ankles. Move without pain, bouncing, or breath-holding.",
+                exercises = listOf(
+                    trainingRef("Cat_Stretch", seconds = 45),
+                    trainingRef("Childs_Pose", seconds = 45),
+                    trainingRef("90_90_Hamstring", seconds = 45),
+                    trainingRef("Kneeling_Hip_Flexor", seconds = 45),
+                    trainingRef("Arm_Circles", seconds = 35),
+                    trainingRef("Ankle_Circles", seconds = 35)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.MOBILITY}_${TrainingLevels.INTERMEDIATE}",
+                goal = TrainingGoals.MOBILITY,
+                level = TrainingLevels.INTERMEDIATE,
+                durationMinutes = 25,
+                titleRu = "Спина после сидячего дня",
+                titleEn = "Back After Sitting",
+                descriptionRu = "Мобилити-сессия для спины, сгибателей бедра, задней поверхности и плеч. Хорошо подходит после учебы, офиса или долгой дороги.",
+                descriptionEn = "A mobility session for back, hip flexors, hamstrings, and shoulders. Good after studying, office work, or a long commute.",
+                exercises = listOf(
+                    trainingRef("Worlds_Greatest_Stretch", seconds = 55),
+                    trainingRef("Hip_Circles_prone", seconds = 45),
+                    trainingRef("Intermediate_Hip_Flexor_and_Quad_Stretch", seconds = 50),
+                    trainingRef("Spinal_Stretch", seconds = 50),
+                    trainingRef("Round_The_World_Shoulder_Stretch", seconds = 45),
+                    trainingRef("Childs_Pose", seconds = 55)
+                )
+            ),
+            TrainingTemplate(
+                id = "seed_${TrainingGoals.MOBILITY}_${TrainingLevels.ADVANCED}",
+                goal = TrainingGoals.MOBILITY,
+                level = TrainingLevels.ADVANCED,
+                durationMinutes = 30,
+                titleRu = "Восстановление после тренировки",
+                titleEn = "Post-Workout Recovery",
+                descriptionRu = "Восстановительный поток для дней между тяжелыми тренировками. Работайте по ощущениям, не превращайте растяжку в силовое усилие.",
+                descriptionEn = "A recovery flow for days between hard sessions. Work by feel and do not turn stretching into a strength effort.",
+                exercises = listOf(
+                    trainingRef("Worlds_Greatest_Stretch", seconds = 60),
+                    trainingRef("Cat_Stretch", seconds = 45),
+                    trainingRef("Kneeling_Hip_Flexor", seconds = 50),
+                    trainingRef("90_90_Hamstring", seconds = 50),
+                    trainingRef("Adductor_Groin", seconds = 50),
+                    trainingRef("Spinal_Stretch", seconds = 50),
+                    trainingRef("Childs_Pose", seconds = 60)
+                )
+            )
+        )
     }
-
-    private fun targetExerciseCount(goal: String): Int {
-        return when (goal) {
-            TrainingGoals.STRENGTH -> 8
-            TrainingGoals.FATBURN -> 9
-            TrainingGoals.ENDURANCE -> 9
-            TrainingGoals.MOBILITY -> 7
-            else -> 8
-        }
-    }
-
-    private fun minExercisesForGoal(goal: String): Int {
-        return when (goal) {
-            TrainingGoals.STRENGTH -> 6
-            TrainingGoals.FATBURN -> 7
-            TrainingGoals.ENDURANCE -> 7
-            TrainingGoals.MOBILITY -> 6
-            else -> 6
-        }
-    }
-
-    private fun durationForGoal(goal: String): Int {
-        return when (goal) {
-            TrainingGoals.STRENGTH -> 35
-            TrainingGoals.FATBURN -> 30
-            TrainingGoals.ENDURANCE -> 40
-            TrainingGoals.MOBILITY -> 25
-            else -> 30
-        }
-    }
-
-    private fun exerciseTiming(goal: String, exercise: ExerciseEntity): Pair<Int?, Int?> {
-        if (exercise.type == "time") {
-            val seconds = when (goal) {
-                TrainingGoals.STRENGTH -> 30
-                TrainingGoals.FATBURN -> 40
-                TrainingGoals.ENDURANCE -> 50
-                TrainingGoals.MOBILITY -> 45
-                else -> 35
-            }
-            return seconds to null
-        }
-
-        val reps = when (goal) {
-            TrainingGoals.STRENGTH -> 10
-            TrainingGoals.FATBURN -> 14
-            TrainingGoals.ENDURANCE -> 12
-            TrainingGoals.MOBILITY -> 8
-            else -> exercise.defaultReps.coerceAtLeast(8)
-        }
-        return null to reps
-    }
-
-    private fun trainingTitle(goal: String, level: String, languageCode: String): String {
-        return if (languageCode == "ru") {
-            val goalText = when (goal) {
-                TrainingGoals.STRENGTH -> "Сила"
-                TrainingGoals.FATBURN -> "Похудение"
-                TrainingGoals.ENDURANCE -> "Выносливость"
-                TrainingGoals.MOBILITY -> "Подвижность"
-                else -> "Тренировка"
-            }
-            val levelText = when (level) {
-                TrainingLevels.BEGINNER -> "Новичок"
-                TrainingLevels.INTERMEDIATE -> "Средний"
-                TrainingLevels.ADVANCED -> "Продвинутый"
-                else -> level
-            }
-            "$goalText · $levelText"
-        } else {
-            val goalText = when (goal) {
-                TrainingGoals.STRENGTH -> "Strength"
-                TrainingGoals.FATBURN -> "Fat Burn"
-                TrainingGoals.ENDURANCE -> "Endurance"
-                TrainingGoals.MOBILITY -> "Mobility"
-                else -> "Workout"
-            }
-            val levelText = when (level) {
-                TrainingLevels.BEGINNER -> "Beginner"
-                TrainingLevels.INTERMEDIATE -> "Intermediate"
-                TrainingLevels.ADVANCED -> "Advanced"
-                else -> level
-            }
-            "$goalText · $levelText"
-        }
-    }
-
-    private fun trainingDescription(goal: String, level: String, languageCode: String): String {
-        return if (languageCode == "ru") {
-            val levelText = when (level) {
-                TrainingLevels.BEGINNER -> "новичок"
-                TrainingLevels.INTERMEDIATE -> "средний"
-                TrainingLevels.ADVANCED -> "продвинутый"
-                else -> level
-            }
-            when (goal) {
-                TrainingGoals.STRENGTH -> "Базовый силовой комплекс, уровень: $levelText."
-                TrainingGoals.FATBURN -> "Интервальный комплекс для расхода калорий, уровень: $levelText."
-                TrainingGoals.ENDURANCE -> "Продолжительная тренировка на выносливость, уровень: $levelText."
-                TrainingGoals.MOBILITY -> "Комплекс на мобильность и контроль движений, уровень: $levelText."
-                else -> "Готовая тренировка, уровень: $levelText."
-            }
-        } else {
-            when (goal) {
-                TrainingGoals.STRENGTH -> "Baseline strength routine for $level level."
-                TrainingGoals.FATBURN -> "Interval routine for calorie burn at $level level."
-                TrainingGoals.ENDURANCE -> "Longer endurance routine for $level level."
-                TrainingGoals.MOBILITY -> "Mobility and movement-control routine for $level level."
-                else -> "Ready workout for $level level."
-            }
-        }
-    }
-
-    private fun matchesGoal(exercise: ExerciseEntity, goal: String): Boolean {
-        return when (goal) {
-            TrainingGoals.STRENGTH -> exercise.type == "reps"
-            TrainingGoals.FATBURN -> exercise.type == "time" || exercise.musclePrimary == "cardio"
-            TrainingGoals.ENDURANCE -> exercise.type == "time" || exercise.musclePrimary in setOf("legs", "core")
-            TrainingGoals.MOBILITY -> exercise.musclePrimary in setOf("mobility", "stretch", "core")
-            else -> true
-        }
-    }
-
-    private fun levelRank(level: String): Int {
-        return when (level.lowercase()) {
-            TrainingLevels.BEGINNER -> 0
-            TrainingLevels.INTERMEDIATE -> 1
-            TrainingLevels.ADVANCED -> 2
-            else -> 0
-        }
+    private fun trainingRef(exerciseId: String, seconds: Int? = null, reps: Int? = null): TrainingExerciseRef {
+        return TrainingExerciseRef(
+            exerciseId = exerciseId,
+            durationSec = seconds,
+            reps = reps
+        )
     }
 
     private fun SourceExercise.toEntityOrNull(): ExerciseEntity? {
@@ -374,6 +523,7 @@ class SeedImportRepository @Inject constructor(
 
     private fun normalizeEquipment(raw: String?): List<String> {
         val tag = when (raw.orEmpty().lowercase().trim()) {
+            "" -> EquipmentTags.NO_EQUIPMENT
             "body only", "собственный вес", "только тело" -> EquipmentTags.NO_EQUIPMENT
             "dumbbell", "гантель", "гантели" -> EquipmentTags.DUMBBELLS
             "kettlebells", "kettlebell", "гири", "гиря" -> EquipmentTags.KETTLEBELL
@@ -482,6 +632,24 @@ class SeedImportRepository @Inject constructor(
         @SerializedName("category") val category: String
     )
 
+    private data class TrainingTemplate(
+        val id: String,
+        val goal: String,
+        val level: String,
+        val durationMinutes: Int,
+        val titleRu: String,
+        val titleEn: String,
+        val descriptionRu: String,
+        val descriptionEn: String,
+        val exercises: List<TrainingExerciseRef>
+    )
+
+    private data class TrainingExerciseRef(
+        val exerciseId: String,
+        val durationSec: Int?,
+        val reps: Int?
+    )
+
     private data class GeneratedTrainings(
         val trainings: List<TrainingEntity>,
         val links: List<TrainingExerciseEntity>
@@ -490,6 +658,7 @@ class SeedImportRepository @Inject constructor(
     private companion object {
         const val RU_ASSET = "bd_ru.json"
         const val EN_ASSET = "bd_en.json"
-        const val SEED_VERSION = 3
+        const val SEED_VERSION = 6
+        const val MIN_EXERCISES_PER_TRAINING = 4
     }
 }

@@ -102,7 +102,10 @@ fun ProgramDetailsScreen(
                     )
                 }
             }
-            items(uiState.exercises, key = { it.exerciseId }) { item ->
+            items(
+                items = uiState.exercises,
+                key = { item -> "${item.programId}_${item.orderIndex}_${item.exerciseId}" }
+            ) { item ->
                 val resolvedText = uiState.exerciseTexts[item.exerciseId]
                 ExerciseProgramCard(
                     item = item,

@@ -11,13 +11,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -25,7 +33,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
@@ -56,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.font.FontWeight
@@ -82,9 +90,28 @@ fun WorkoutPlayerScreen(
 
     if (uiState.isFinished) {
         WorkoutFinishedState(
-            title = strings.workoutComplete,
-            button = strings.backToProgram,
+            title = if (isRu) "Поздравляю, вы справились" else strings.workoutComplete,
+            button = strings.finishWorkout,
             onFinish = onFinish
+        )
+        return
+    }
+
+    val totalExercises = uiState.exercises.size
+    val isCompletionStep = totalExercises > 0 && uiState.currentIndex >= totalExercises
+    if (isCompletionStep) {
+        WorkoutCompletionStep(
+            title = uiState.programTitle,
+            message = if (isRu) "Поздравляю, вы справились" else "Congratulations, you did it",
+            finishButton = strings.finishWorkout,
+            returnButton = if (isRu) "Вернуться к тренировке" else "Return to workout",
+            backContentDescription = strings.navBackAction,
+            onBack = onBack,
+            onPrevious = viewModel::previous,
+            onFinish = {
+                viewModel.finish()
+                onFinish()
+            }
         )
         return
     }
@@ -102,7 +129,7 @@ fun WorkoutPlayerScreen(
         return
     }
 
-    val totalExercises = uiState.exercises.size.coerceAtLeast(1)
+    val safeTotalExercises = totalExercises.coerceAtLeast(1)
     val currentPosition = (uiState.currentIndex + 1).coerceAtMost(totalExercises)
     val resolvedText = uiState.exerciseTexts[current.exerciseId]
     val exerciseTitleText = resolvedText?.title?.ifBlank { current.title } ?: current.title
@@ -125,7 +152,7 @@ fun WorkoutPlayerScreen(
     val topBarTitle = uiState.programTitle
 
     val timerTotalSeconds = when {
-        isTransitionRest -> UI_INTER_EXERCISE_REST_SEC
+        isTransitionRest -> uiState.interExerciseRestSec
         current.defaultDurationSec > 0 -> current.defaultDurationSec
         current.defaultReps > 0 && uiState.repsRestSecondsLeft > 0 -> UI_REPS_REST_SEC
         else -> 0
@@ -140,8 +167,13 @@ fun WorkoutPlayerScreen(
     val timerProgress = if (timerTotalSeconds > 0) {
         (timerElapsedSeconds.toFloat() / timerTotalSeconds.toFloat()).coerceIn(0f, 1f)
     } else {
-        (currentPosition.toFloat() / totalExercises.toFloat()).coerceIn(0f, 1f)
+        (currentPosition.toFloat() / safeTotalExercises.toFloat()).coerceIn(0f, 1f)
     }
+    val animatedTimerProgress by animateFloatAsState(
+        targetValue = timerProgress,
+        animationSpec = tween(durationMillis = 450),
+        label = "workout_progress"
+    )
 
     val unifiedColor = MaterialTheme.colorScheme.surface
 
@@ -153,12 +185,12 @@ fun WorkoutPlayerScreen(
         val screenWidth = maxWidth
         val screenHeight = maxHeight
         val horizontalPadding = (screenWidth * 0.04f).coerceIn(10.dp, 20.dp)
-        val verticalPadding = (screenHeight * 0.014f).coerceIn(8.dp, 16.dp)
-        val sectionSpacing = (screenHeight * 0.014f).coerceIn(8.dp, 14.dp)
-        val cardCorner = (screenWidth * 0.06f).coerceIn(18.dp, 28.dp)
-        val cardInnerPadding = (screenWidth * 0.022f).coerceIn(6.dp, 12.dp)
-        val mediaCorner = (screenWidth * 0.052f).coerceIn(16.dp, 24.dp)
-        val mediaPanelHeight = (screenHeight * 0.45f).coerceIn(260.dp, 380.dp)
+        val verticalPadding = (screenHeight * 0.01f).coerceIn(6.dp, 12.dp)
+        val sectionSpacing = (screenHeight * 0.01f).coerceIn(6.dp, 10.dp)
+        val cardCorner = (screenWidth * 0.045f).coerceIn(14.dp, 22.dp)
+        val cardInnerPadding = (screenWidth * 0.02f).coerceIn(6.dp, 10.dp)
+        val mediaCorner = (screenWidth * 0.04f).coerceIn(12.dp, 18.dp)
+        val mediaPanelHeight = (screenHeight * 0.4f).coerceIn(220.dp, 340.dp)
         val titleHorizontalPadding = (screenWidth * 0.05f).coerceIn(12.dp, 24.dp)
         val topIconSize = (screenWidth * 0.065f).coerceIn(22.dp, 28.dp)
         val transportIconSize = (screenWidth * 0.1f).coerceIn(30.dp, 42.dp)
@@ -228,86 +260,112 @@ fun WorkoutPlayerScreen(
                     }
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(mediaCorner),
-                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                Box(
                     modifier = if (isCompactHeight) {
                         Modifier
                             .fillMaxWidth()
                             .height(mediaPanelHeight)
-                            .padding(vertical = 10.dp)
+                            .padding(vertical = 4.dp)
                     } else {
                         Modifier
                             .fillMaxWidth()
                             .weight(1f, fill = true)
-                            .heightIn(min = mediaPanelHeight)
-                            .padding(vertical = 10.dp)
+                            .height(mediaPanelHeight)
+                            .padding(vertical = 4.dp)
                     }
                 ) {
-                    if (showTextMode) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
-                                .padding((screenWidth * 0.038f).coerceIn(12.dp, 16.dp)),
-                            verticalArrangement = Arrangement.spacedBy((screenHeight * 0.012f).coerceIn(8.dp, 12.dp))
-                        ) {
-                            Text(
-                                text = exerciseDescriptionText.ifBlank {
-                                    if (isRu) {
-                                        "Описание пока отсутствует."
-                                    } else {
-                                        "Description is not available yet."
-                                    }
-                                },
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                    Surface(
+                        shape = RoundedCornerShape(mediaCorner),
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        AnimatedContent(
+                            targetState = "${current.exerciseId}:$showTextMode",
+                            transitionSpec = {
+                                (fadeIn(animationSpec = tween(260)) + slideInHorizontally { it / 5 })
+                                    .togetherWith(fadeOut(animationSpec = tween(180)) + slideOutHorizontally { -it / 5 })
+                            },
+                            label = "exercise_media_mode"
+                        ) { target ->
+                            val textMode = target.endsWith(":true")
+                            if (textMode) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(rememberScrollState())
+                                        .padding((screenWidth * 0.038f).coerceIn(12.dp, 16.dp)),
+                                    verticalArrangement = Arrangement.spacedBy((screenHeight * 0.012f).coerceIn(8.dp, 12.dp))
+                                ) {
+                                    Text(
+                                        text = exerciseDescriptionText.ifBlank {
+                                            if (isRu) {
+                                                "Описание пока отсутствует."
+                                            } else {
+                                                "Description is not available yet."
+                                            }
+                                        },
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
 
-                            ExerciseMetaLine(
-                                label = if (isRu) "Режим" else "Mode",
-                                value = modeText
-                            )
-                            ExerciseMetaLine(
-                                label = if (isRu) "Нагрузка" else "Load",
-                                value = loadText
-                            )
-                            ExerciseMetaLine(
-                                label = strings.muscleGroupLabel,
-                                value = current.muscleGroup.ifBlank { emptyMark }
-                            )
-                            ExerciseMetaLine(
-                                label = strings.equipmentLabel,
-                                value = current.equipment.ifBlank { emptyMark }
-                            )
-                            ExerciseMetaLine(
-                                label = if (isRu) "Теги" else "Tags",
-                                value = tagsText
-                            )
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(mediaCorner))
-                        ) {
-                            ExerciseMedia(
-                                mediaType = current.mediaType,
-                                mediaUrl = current.mediaUrl,
-                                fallbackImageUrl = current.fallbackImageUrl,
-                                stableKey = current.exerciseId,
-                                modifier = Modifier.fillMaxSize()
-                            )
+                                    ExerciseMetaLine(
+                                        label = if (isRu) "Режим" else "Mode",
+                                        value = modeText
+                                    )
+                                    ExerciseMetaLine(
+                                        label = if (isRu) "Нагрузка" else "Load",
+                                        value = loadText
+                                    )
+                                    ExerciseMetaLine(
+                                        label = strings.muscleGroupLabel,
+                                        value = current.muscleGroup.ifBlank { emptyMark }
+                                    )
+                                    ExerciseMetaLine(
+                                        label = strings.equipmentLabel,
+                                        value = current.equipment.ifBlank { emptyMark }
+                                    )
+                                    ExerciseMetaLine(
+                                        label = if (isRu) "Теги" else "Tags",
+                                        value = tagsText
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(mediaCorner)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    ExerciseMedia(
+                                        mediaType = current.mediaType,
+                                        mediaUrl = current.mediaUrl,
+                                        fallbackImageUrl = current.fallbackImageUrl,
+                                        stableKey = current.exerciseId,
+                                        fillHeight = true,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
                         }
                     }
                 }
 
-                Text(
-                    text = exerciseTitleText,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                AnimatedContent(
+                    targetState = exerciseTitleText,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = tween(240)) + slideInVertically { it / 3 })
+                            .togetherWith(fadeOut(animationSpec = tween(160)) + slideOutVertically { -it / 3 })
+                    },
+                    label = "exercise_title"
+                ) { title ->
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Text(
                     text = buildString {
@@ -325,7 +383,7 @@ fun WorkoutPlayerScreen(
                 )
 
                 LinearProgressIndicator(
-                    progress = { timerProgress },
+                    progress = { animatedTimerProgress },
                     color = Color.Black,
                     trackColor = Color.Black.copy(alpha = 0.2f),
                     modifier = Modifier
@@ -380,7 +438,7 @@ fun WorkoutPlayerScreen(
                     )
                     TransportIcon(
                         onClick = viewModel::next,
-                        enabled = uiState.currentIndex < uiState.exercises.lastIndex,
+                        enabled = uiState.currentIndex < uiState.exercises.size,
                         icon = Icons.Default.SkipNext,
                         contentDescription = strings.next,
                         size = transportIconSize
@@ -411,15 +469,6 @@ fun WorkoutPlayerScreen(
                         onClick = viewModel::openIconsHelpDialog,
                         icon = Icons.Default.Info,
                         contentDescription = if (isRu) "Инфо" else "Info",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f),
-                        height = actionButtonHeight,
-                        iconSize = actionIconSize
-                    )
-                    PillIconAction(
-                        onClick = viewModel::finish,
-                        icon = Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = strings.finishWorkout,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f),
                         height = actionButtonHeight,
@@ -485,6 +534,122 @@ private fun WorkoutFinishedState(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(button)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkoutCompletionStep(
+    title: String,
+    message: String,
+    finishButton: String,
+    returnButton: String,
+    backContentDescription: String,
+    onBack: () -> Unit,
+    onPrevious: () -> Unit,
+    onFinish: () -> Unit
+) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        val screenWidth = maxWidth
+        val screenHeight = maxHeight
+        val horizontalPadding = (screenWidth * 0.04f).coerceIn(10.dp, 20.dp)
+        val verticalPadding = (screenHeight * 0.01f).coerceIn(6.dp, 12.dp)
+        val sectionSpacing = (screenHeight * 0.01f).coerceIn(6.dp, 10.dp)
+        val cardCorner = (screenWidth * 0.045f).coerceIn(14.dp, 22.dp)
+        val contentPadding = (screenWidth * 0.02f).coerceIn(6.dp, 10.dp)
+        val panelCorner = (screenWidth * 0.04f).coerceIn(12.dp, 18.dp)
+        val panelHeight = (screenHeight * 0.42f).coerceIn(240.dp, 360.dp)
+        val titleHorizontalPadding = (screenWidth * 0.05f).coerceIn(12.dp, 24.dp)
+        val topIconSize = (screenWidth * 0.065f).coerceIn(22.dp, 28.dp)
+        val topTitleHeight = (screenHeight * 0.04f).coerceIn(26.dp, 34.dp)
+        val buttonHeight = (screenHeight * 0.058f).coerceIn(44.dp, 52.dp)
+
+        Surface(
+            shape = RoundedCornerShape(cardCorner),
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+                verticalArrangement = Arrangement.spacedBy(sectionSpacing)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    FlatIconAction(
+                        onClick = onBack,
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = backContentDescription,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        size = topIconSize
+                    )
+
+                    LeftToRightMarqueeTitle(
+                        text = title,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = titleHorizontalPadding),
+                        height = topTitleHeight
+                    )
+
+                    Spacer(modifier = Modifier.size(topIconSize))
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(panelCorner),
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = true)
+                        .height(panelHeight)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(18.dp))
+                        Button(
+                            onClick = onFinish,
+                            shape = RoundedCornerShape(999.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(buttonHeight)
+                        ) {
+                            Text(finishButton)
+                        }
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = onPrevious,
+                    shape = RoundedCornerShape(999.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(buttonHeight)
+                ) {
+                    Text(returnButton)
                 }
             }
         }
@@ -558,11 +723,14 @@ private fun IconLegendDialog(
     val neverText = if (isRu) "Больше не показывать" else "Don't show again"
     val prevDesc = if (isRu) "Переход к предыдущему упражнению." else "Go to the previous exercise."
     val playDesc = if (isRu) "Запуск или пауза таймера текущего шага." else "Start or pause the current step timer."
-    val nextDesc = if (isRu) "Переход к следующему упражнению." else "Go to the next exercise."
+    val nextDesc = if (isRu) {
+        "Переход к следующему упражнению. После последнего упражнения открывает экран завершения."
+    } else {
+        "Go to the next exercise. After the last exercise, opens the completion screen."
+    }
     val likeDesc = if (isRu) "Добавить упражнение в избранное или убрать из него." else "Add/remove the exercise to favorites."
     val textDesc = if (isRu) "Показать или скрыть описание и теги упражнения." else "Show or hide exercise description and tags."
     val infoDesc = if (isRu) "Открыть эту справку по иконкам." else "Open this icon guide."
-    val finishDesc = if (isRu) "Завершить тренировку досрочно." else "Finish workout immediately."
 
     AlertDialog(
         onDismissRequest = onOk,
@@ -581,7 +749,6 @@ private fun IconLegendDialog(
                 IconLegendItem(icon = Icons.Default.Favorite, text = likeDesc)
                 IconLegendItem(icon = Icons.Default.Article, text = textDesc)
                 IconLegendItem(icon = Icons.Default.Info, text = infoDesc)
-                IconLegendItem(icon = Icons.AutoMirrored.Filled.ExitToApp, text = finishDesc)
             }
         },
         confirmButton = {
@@ -725,4 +892,3 @@ private fun formatTime(seconds: Int): String {
 }
 
 private const val UI_REPS_REST_SEC = 30
-private const val UI_INTER_EXERCISE_REST_SEC = 15

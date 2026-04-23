@@ -5,20 +5,28 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ermofit.app.data.datastore.UserPreferencesManager
 import com.ermofit.app.data.local.relation.ProgramExerciseWithDetails
+import com.ermofit.app.data.repository.CustomProgramsRepository
 import com.ermofit.app.data.repository.FavoritesRepository
 import com.ermofit.app.data.repository.LocalDataRepository
 import com.ermofit.app.domain.model.ResolvedExerciseText
 import com.ermofit.app.domain.usecase.ExerciseTextResolver
 import com.ermofit.app.domain.usecase.ProgramTextResolver
+import com.ermofit.app.navigation.MainRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val DEFAULT_WORKOUT_INTER_EXERCISE_REST_SEC = 15
 
 data class WorkoutPlayerUiState(
     val programId: String = "",
@@ -26,6 +34,7 @@ data class WorkoutPlayerUiState(
     val exercises: List<ProgramExerciseWithDetails> = emptyList(),
     val exerciseTexts: Map<String, ResolvedExerciseText> = emptyMap(),
     val favoriteExerciseIds: Set<String> = emptySet(),
+    val interExerciseRestSec: Int = DEFAULT_WORKOUT_INTER_EXERCISE_REST_SEC,
     val currentIndex: Int = 0,
     val isRunning: Boolean = false,
     val mainTimerSecondsLeft: Int = 0,
@@ -36,10 +45,12 @@ data class WorkoutPlayerUiState(
     val isFinished: Boolean = false
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class WorkoutPlayerViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val localDataRepository: LocalDataRepository,
+    private val customProgramsRepository: CustomProgramsRepository,
     private val favoritesRepository: FavoritesRepository,
     private val preferencesManager: UserPreferencesManager,
     exerciseTextResolver: ExerciseTextResolver,
@@ -47,14 +58,85 @@ class WorkoutPlayerViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val programId: String = checkNotNull(savedStateHandle["programId"])
+    private val workoutSource: String = savedStateHandle["source"] ?: MainRoutes.WorkoutSourceStock
+    private val isCustomWorkout = workoutSource == MainRoutes.WorkoutSourceCustom
     private val stateHandle = savedStateHandle
-    private val programFlow = localDataRepository.observeProgramById(programId)
-    private val programTextFlow = programTextResolver.observeTextForProgram(programId)
-    private val programExercisesFlow = localDataRepository.observeExercisesForProgram(programId)
+    private val customProgramFlow = if (isCustomWorkout) {
+        customProgramsRepository.observeProgram(programId)
+    } else {
+        flowOf(null)
+    }
+    private val settingsFlow = combine(
+        exerciseTextResolver.observePreferredLangCode(),
+        exerciseTextResolver.observeOnlyWithTranslation()
+    ) { preferredLang, onlyTranslated ->
+        WorkoutSearchSettings(
+            preferredLang = preferredLang,
+            onlyTranslated = onlyTranslated
+        )
+    }
+    private val programTitleFlow = if (isCustomWorkout) {
+        customProgramFlow.map { it?.title.orEmpty() }
+    } else {
+        combine(
+            localDataRepository.observeProgramById(programId),
+            programTextResolver.observeTextForProgram(programId)
+        ) { program, text ->
+            text.title.ifBlank { program?.title.orEmpty() }
+        }
+    }
+    private val programExercisesFlow = if (isCustomWorkout) {
+        combine(customProgramFlow, settingsFlow) { program, settings ->
+            program to settings
+        }.flatMapLatest { (program, settings) ->
+            val exerciseIds = program?.exercises.orEmpty()
+                .map { it.exerciseId }
+                .distinct()
+            if (program == null || exerciseIds.isEmpty()) {
+                flowOf(emptyList())
+            } else {
+                localDataRepository.observeExercisesByIds(
+                    ids = exerciseIds,
+                    langCode = settings.preferredLang,
+                    onlyTranslated = settings.onlyTranslated
+                ).map { exercises ->
+                    val exerciseById = exercises.associateBy { it.id }
+                    program.exercises
+                        .sortedBy { it.orderIndex }
+                        .mapNotNull { item ->
+                            val exercise = exerciseById[item.exerciseId] ?: return@mapNotNull null
+                            ProgramExerciseWithDetails(
+                                programId = program.id,
+                                exerciseId = item.exerciseId,
+                                orderIndex = item.orderIndex,
+                                defaultDurationSec = item.durationSec,
+                                defaultReps = item.reps,
+                                title = exercise.title,
+                                description = exercise.description,
+                                muscleGroup = exercise.muscleGroup,
+                                equipment = exercise.equipment,
+                                tags = exercise.tags,
+                                mediaType = exercise.mediaType,
+                                mediaUrl = exercise.mediaUrl,
+                                fallbackImageUrl = exercise.fallbackImageUrl
+                            )
+                        }
+                }
+            }
+        }
+    } else {
+        localDataRepository.observeExercisesForProgram(programId)
+    }
+    private val interExerciseRestFlow = if (isCustomWorkout) {
+        customProgramFlow.map { it?.interExerciseRestSec ?: DEFAULT_WORKOUT_INTER_EXERCISE_REST_SEC }
+    } else {
+        flowOf(DEFAULT_WORKOUT_INTER_EXERCISE_REST_SEC)
+    }
 
     private val _uiState = MutableStateFlow(
         WorkoutPlayerUiState(
             programId = programId,
+            interExerciseRestSec = stateHandle[KEY_INTER_EXERCISE_REST] ?: DEFAULT_WORKOUT_INTER_EXERCISE_REST_SEC,
             currentIndex = stateHandle[KEY_INDEX] ?: 0,
             isRunning = stateHandle[KEY_RUNNING] ?: false,
             mainTimerSecondsLeft = stateHandle[KEY_MAIN_TIMER] ?: 0,
@@ -69,16 +151,23 @@ class WorkoutPlayerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            combine(programFlow, programTextFlow) { program, text ->
-                text.title.ifBlank { program?.title.orEmpty() }
-            }.collect { title ->
+            programTitleFlow.collect { title ->
                 _uiState.updateAndPersist { it.copy(programTitle = title) }
+            }
+        }
+        viewModelScope.launch {
+            interExerciseRestFlow.collect { restSec ->
+                _uiState.updateAndPersist { it.copy(interExerciseRestSec = restSec.coerceAtLeast(0)) }
             }
         }
         viewModelScope.launch {
             programExercisesFlow.collect { exercises ->
                 _uiState.updateAndPersist { state ->
-                    val safeIndex = state.currentIndex.coerceIn(0, (exercises.size - 1).coerceAtLeast(0))
+                    val safeIndex = if (exercises.isEmpty()) {
+                        0
+                    } else {
+                        state.currentIndex.coerceIn(0, exercises.size)
+                    }
                     val current = exercises.getOrNull(safeIndex)
                     val mainTimer = when {
                         state.mainTimerSecondsLeft > 0 -> state.mainTimerSecondsLeft
@@ -146,7 +235,12 @@ class WorkoutPlayerViewModel @Inject constructor(
 
     fun next() {
         pauseTimer()
-        moveToIndex(_uiState.value.currentIndex + 1)
+        val state = _uiState.value
+        if (state.currentIndex >= state.exercises.lastIndex) {
+            moveToCompletionStep()
+        } else {
+            moveToIndex(state.currentIndex + 1)
+        }
     }
 
     fun previous() {
@@ -226,6 +320,22 @@ class WorkoutPlayerViewModel @Inject constructor(
         }
     }
 
+    private fun moveToCompletionStep() {
+        val state = _uiState.value
+        if (state.exercises.isEmpty()) return
+        timerJob?.cancel()
+        timerJob = null
+        _uiState.updateAndPersist {
+            it.copy(
+                currentIndex = state.exercises.size,
+                isRunning = false,
+                mainTimerSecondsLeft = 0,
+                repsRestSecondsLeft = 0,
+                transitionRestSecondsLeft = 0
+            )
+        }
+    }
+
     private fun startTicker() {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
@@ -268,15 +378,20 @@ class WorkoutPlayerViewModel @Inject constructor(
             if (next <= 0) {
                 val hasNext = state.currentIndex < state.exercises.lastIndex
                 if (hasNext) {
-                    _uiState.updateAndPersist {
-                        it.copy(
-                            mainTimerSecondsLeft = 0,
-                            transitionRestSecondsLeft = INTER_EXERCISE_REST_SEC,
-                            isRunning = true
-                        )
+                    val interExerciseRestSec = state.interExerciseRestSec.coerceAtLeast(0)
+                    if (interExerciseRestSec > 0) {
+                        _uiState.updateAndPersist {
+                            it.copy(
+                                mainTimerSecondsLeft = 0,
+                                transitionRestSecondsLeft = interExerciseRestSec,
+                                isRunning = true
+                            )
+                        }
+                    } else {
+                        moveToIndex(state.currentIndex + 1)
                     }
                 } else {
-                    finish()
+                    moveToCompletionStep()
                 }
             } else {
                 _uiState.updateAndPersist { it.copy(mainTimerSecondsLeft = next) }
@@ -313,6 +428,7 @@ class WorkoutPlayerViewModel @Inject constructor(
         stateHandle[KEY_MAIN_TIMER] = state.mainTimerSecondsLeft
         stateHandle[KEY_REPS_REST] = state.repsRestSecondsLeft
         stateHandle[KEY_TRANSITION_REST] = state.transitionRestSecondsLeft
+        stateHandle[KEY_INTER_EXERCISE_REST] = state.interExerciseRestSec
         stateHandle[KEY_FINISHED] = state.isFinished
     }
 
@@ -321,14 +437,19 @@ class WorkoutPlayerViewModel @Inject constructor(
         super.onCleared()
     }
 
+    private data class WorkoutSearchSettings(
+        val preferredLang: String,
+        val onlyTranslated: Boolean
+    )
+
     private companion object {
         const val DEFAULT_REPS_REST_SEC = 30
-        const val INTER_EXERCISE_REST_SEC = 15
         const val KEY_INDEX = "workout_index"
         const val KEY_RUNNING = "workout_running"
         const val KEY_MAIN_TIMER = "workout_main_timer"
         const val KEY_REPS_REST = "workout_reps_rest"
         const val KEY_TRANSITION_REST = "workout_transition_rest"
+        const val KEY_INTER_EXERCISE_REST = "workout_inter_exercise_rest"
         const val KEY_FINISHED = "workout_finished"
     }
 }
