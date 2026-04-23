@@ -20,9 +20,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
@@ -32,7 +37,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ermofit.app.navigation.MainRoutes
+import com.ermofit.app.ui.customprogram.CustomProgramDetailsViewModel
 import com.ermofit.app.ui.i18n.AppStrings
 import com.ermofit.app.ui.i18n.appLanguage
 import com.ermofit.app.ui.exercise.ExerciseDetailsScreen
@@ -57,9 +65,21 @@ fun MainScreen(
     val navController = rememberNavController()
     var homeSortSignal by rememberSaveable { mutableIntStateOf(0) }
     var exercisesSortSignal by rememberSaveable { mutableIntStateOf(0) }
+    var showDeleteCustomProgramDialog by rememberSaveable { mutableStateOf(false) }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route.orEmpty()
     val isWorkoutRoute = route.startsWith("workout/")
+    val customProgramId = backStackEntry?.arguments?.getString("programId")
+    val customProgramDetailsViewModel = if (route == MainRoutes.CustomProgramDetails && backStackEntry != null) {
+        hiltViewModel<CustomProgramDetailsViewModel>(backStackEntry!!)
+    } else {
+        null
+    }
+    val customProgramUiState = if (customProgramDetailsViewModel != null) {
+        customProgramDetailsViewModel.uiState.collectAsStateWithLifecycle().value
+    } else {
+        null
+    }
     val isRootTab = route in setOf(
         MainRoutes.Favorites,
         MainRoutes.Home,
@@ -113,6 +133,22 @@ fun MainScreen(
                                 }
                             ) {
                                 Icon(Icons.Default.Search, contentDescription = strings.navSearchAction)
+                            }
+                        } else if (route == MainRoutes.CustomProgramDetails && customProgramId != null) {
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(MainRoutes.editCustomProgram(customProgramId)) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = strings.profileEdit)
+                            }
+                            IconButton(
+                                onClick = { showDeleteCustomProgramDialog = true },
+                                enabled = customProgramUiState?.isDeleting != true
+                            ) {
+                                Icon(Icons.Default.DeleteOutline, contentDescription = strings.removeAction)
                             }
                         }
                     },
@@ -281,7 +317,6 @@ fun MainScreen(
                             )
                         )
                     },
-                    onEditProgram = { navController.navigate(MainRoutes.editCustomProgram(it)) },
                     onProgramDeleted = { navController.popBackStack() }
                 )
             }
@@ -316,6 +351,47 @@ fun MainScreen(
                 )
             }
         }
+    }
+
+    if (showDeleteCustomProgramDialog && customProgramDetailsViewModel != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteCustomProgramDialog = false },
+            title = {
+                Text(if (isRu) "Удалить программу?" else "Delete program?")
+            },
+            text = {
+                Text(
+                    if (isRu) {
+                        "Программа будет удалена из вашего профиля без возможности восстановления."
+                    } else {
+                        "This program will be removed from your profile and cannot be restored."
+                    }
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteCustomProgramDialog = false
+                        customProgramDetailsViewModel.deleteProgram(
+                            fallbackErrorMessage = if (isRu) {
+                                "Не удалось удалить программу."
+                            } else {
+                                "Failed to delete the program."
+                            }
+                        )
+                    }
+                ) {
+                    Text(strings.removeAction)
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.OutlinedButton(
+                    onClick = { showDeleteCustomProgramDialog = false }
+                ) {
+                    Text(strings.profileCancel)
+                }
+            }
+        )
     }
 }
 
