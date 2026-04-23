@@ -91,7 +91,7 @@ fun WorkoutPlayerScreen(
     if (uiState.isFinished) {
         WorkoutFinishedState(
             title = if (isRu) "Поздравляю, вы справились" else strings.workoutComplete,
-            button = strings.finishWorkout,
+            button = strings.backToProgram,
             onFinish = onFinish
         )
         return
@@ -103,15 +103,17 @@ fun WorkoutPlayerScreen(
         WorkoutCompletionStep(
             title = uiState.programTitle,
             message = if (isRu) "Поздравляю, вы справились" else "Congratulations, you did it",
-            finishButton = strings.finishWorkout,
+            finishButton = if (uiState.isFinishing) {
+                if (isRu) "Сохраняем прогресс..." else "Saving progress..."
+            } else {
+                strings.finishWorkout
+            },
             returnButton = if (isRu) "Вернуться к тренировке" else "Return to workout",
             backContentDescription = strings.navBackAction,
             onBack = onBack,
             onPrevious = viewModel::previous,
-            onFinish = {
-                viewModel.finish()
-                onFinish()
-            }
+            onFinish = viewModel::finish,
+            finishEnabled = !uiState.isFinishing
         )
         return
     }
@@ -549,7 +551,8 @@ private fun WorkoutCompletionStep(
     backContentDescription: String,
     onBack: () -> Unit,
     onPrevious: () -> Unit,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    finishEnabled: Boolean
 ) {
     BoxWithConstraints(
         modifier = Modifier
@@ -632,6 +635,7 @@ private fun WorkoutCompletionStep(
                         Spacer(modifier = Modifier.height(18.dp))
                         Button(
                             onClick = onFinish,
+                            enabled = finishEnabled,
                             shape = RoundedCornerShape(999.dp),
                             modifier = Modifier
                                 .fillMaxWidth()

@@ -255,6 +255,23 @@ fun MainScreen(
                 HomeScreen(
                     sortDialogSignal = homeSortSignal,
                     onProgramClick = { navController.navigate(MainRoutes.programDetails(it)) },
+                    onLastWorkoutClick = { programId, source ->
+                        navController.navigate(
+                            if (source == MainRoutes.WorkoutSourceCustom) {
+                                MainRoutes.customProgramDetails(programId)
+                            } else {
+                                MainRoutes.programDetails(programId)
+                            }
+                        )
+                    },
+                    onLastWorkoutStart = { programId, source ->
+                        navController.navigate(
+                            MainRoutes.workoutPlayer(
+                                programId = programId,
+                                source = source
+                            )
+                        )
+                    },
                     onCreateProgramClick = {
                         navController.navigate(MainRoutes.CreateCustomProgram) {
                             launchSingleTop = true

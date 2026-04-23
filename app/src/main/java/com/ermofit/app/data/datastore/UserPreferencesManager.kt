@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ermofit.app.data.model.AppLanguage
 import com.ermofit.app.data.model.AppThemeMode
+import com.ermofit.app.data.model.LastWorkoutShortcut
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -34,6 +35,7 @@ class UserPreferencesManager @Inject constructor(
         val appLanguage = stringPreferencesKey("app_language")
         val showOnlyWithTranslation = booleanPreferencesKey("show_only_with_translation")
         val showWorkoutIconsHelp = booleanPreferencesKey("show_workout_icons_help")
+        val lastWorkoutShortcut = stringPreferencesKey("last_workout_shortcut")
     }
 
     val seedVersionFlow: Flow<Int> = context.dataStore.data.map { prefs ->
@@ -62,6 +64,10 @@ class UserPreferencesManager @Inject constructor(
 
     fun observeShowWorkoutIconsHelp(): Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[Keys.showWorkoutIconsHelp] ?: true
+    }
+
+    fun observeLastWorkoutShortcut(): Flow<LastWorkoutShortcut?> = context.dataStore.data.map { prefs ->
+        decodeLastWorkoutShortcut(prefs[Keys.lastWorkoutShortcut])
     }
 
     suspend fun setSeedVersion(version: Int) {
@@ -124,10 +130,29 @@ class UserPreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun setLastWorkoutShortcut(shortcut: LastWorkoutShortcut) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.lastWorkoutShortcut] = gson.toJson(shortcut)
+        }
+    }
+
+    suspend fun clearLastWorkoutShortcut() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(Keys.lastWorkoutShortcut)
+        }
+    }
+
     private fun decodeHistory(raw: String): List<String> {
         return runCatching {
             val type = object : TypeToken<List<String>>() {}.type
             gson.fromJson<List<String>>(raw, type) ?: emptyList()
         }.getOrDefault(emptyList())
+    }
+
+    private fun decodeLastWorkoutShortcut(raw: String?): LastWorkoutShortcut? {
+        if (raw.isNullOrBlank()) return null
+        return runCatching {
+            gson.fromJson(raw, LastWorkoutShortcut::class.java)
+        }.getOrNull()?.takeIf { it.programId.isNotBlank() }
     }
 }

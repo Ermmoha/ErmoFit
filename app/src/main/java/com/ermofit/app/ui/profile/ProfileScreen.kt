@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ermofit.app.data.model.AppLanguage
 import com.ermofit.app.data.model.AppThemeMode
+import com.ermofit.app.ui.i18n.appLanguage
 import com.ermofit.app.ui.i18n.appStrings
 
 @Composable
@@ -47,6 +51,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val strings = appStrings()
+    val isRu = appLanguage().raw == "ru"
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -127,6 +132,13 @@ fun ProfileScreen(
                         }
                     }
                 }
+            }
+
+            item {
+                ProfileProgressSection(
+                    uiState = uiState,
+                    isRu = isRu
+                )
             }
 
             item {
@@ -264,6 +276,212 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(strings.profileLogout)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileProgressSection(
+    uiState: ProfileUiState,
+    isRu: Boolean
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = if (isRu) "Прогресс" else "Progress",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            if (!uiState.hasProgress) {
+                Text(
+                    text = if (isRu) {
+                        "Прогресс появится после первой завершённой тренировки."
+                    } else {
+                        "Progress will appear after your first completed workout."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    ProfileStatCard(
+                        value = uiState.completedWorkoutsCount.toString(),
+                        label = if (isRu) "Тренировок" else "Workouts",
+                        modifier = Modifier.weight(1f)
+                    )
+                    ProfileStatCard(
+                        value = uiState.workoutsThisWeek.toString(),
+                        label = if (isRu) "За 7 дней" else "Last 7 days",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    ProfileStatCard(
+                        value = uiState.completedMinutes.toString(),
+                        label = if (isRu) "Минут всего" else "Total minutes",
+                        modifier = Modifier.weight(1f)
+                    )
+                    ProfileStatCard(
+                        value = if (isRu) {
+                            "${uiState.currentStreakDays} дн"
+                        } else {
+                            "${uiState.currentStreakDays} d"
+                        },
+                        label = if (isRu) "Текущий стрик" else "Current streak",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = if (isRu) "Последняя тренировка" else "Last workout",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = uiState.lastWorkoutTitle.ifBlank { "-" },
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = uiState.lastWorkoutAtLabel.ifBlank { "-" },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                ProfileProgressChart(
+                    days = uiState.progressDays,
+                    isRu = isRu
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileStatCard(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileProgressChart(
+    days: List<ProfileProgressDayUi>,
+    isRu: Boolean
+) {
+    val maxWorkouts = (days.maxOfOrNull { it.workouts } ?: 0).coerceAtLeast(1)
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = if (isRu) "Активность за 7 дней" else "Activity for 7 days",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            days.forEach { day ->
+                val heightFraction = if (day.workouts == 0) {
+                    0.08f
+                } else {
+                    (day.workouts.toFloat() / maxWorkouts.toFloat()).coerceAtLeast(0.18f)
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = day.workouts.toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(18.dp)
+                            .height(72.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(heightFraction)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape
+                                )
+                        )
+                    }
+                    Text(
+                        text = day.label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = if (isRu) "${day.minutes} мин" else "${day.minutes} min",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

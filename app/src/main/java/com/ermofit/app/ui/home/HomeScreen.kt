@@ -65,6 +65,8 @@ import kotlin.math.roundToInt
 fun HomeScreen(
     sortDialogSignal: Int = 0,
     onProgramClick: (String) -> Unit,
+    onLastWorkoutClick: (String, String) -> Unit,
+    onLastWorkoutStart: (String, String) -> Unit,
     onCreateProgramClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -73,6 +75,7 @@ fun HomeScreen(
     val programs by viewModel.recommendedPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
     val programTexts by viewModel.programTexts.collectAsStateWithLifecycle(initialValue = emptyMap())
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val lastWorkout by viewModel.lastWorkout.collectAsStateWithLifecycle()
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsStateWithLifecycle()
     val selectedLevel by viewModel.selectedLevel.collectAsStateWithLifecycle()
     val selectedMuscleGroup by viewModel.selectedMuscleGroup.collectAsStateWithLifecycle()
@@ -148,6 +151,35 @@ fun HomeScreen(
                 }
             }
 
+            if (lastWorkout != null) {
+                item {
+                    HomeSectionHeader(
+                        title = if (isRu) {
+                            "Последняя тренировка"
+                        } else {
+                            "Last workout"
+                        },
+                        subtitle = if (isRu) {
+                            "Быстрый возврат к последней запущенной программе."
+                        } else {
+                            "Jump back into the last workout you opened."
+                        }
+                    )
+                }
+                item {
+                    HomeLastWorkoutCard(
+                        workout = lastWorkout!!,
+                        isRu = isRu,
+                        onOpen = {
+                            onLastWorkoutClick(lastWorkout!!.programId, lastWorkout!!.source)
+                        },
+                        onStart = {
+                            onLastWorkoutStart(lastWorkout!!.programId, lastWorkout!!.source)
+                        }
+                    )
+                }
+            }
+
             item {
                 HomeSectionHeader(
                     title = strings.recommendedProgramsTitle,
@@ -216,6 +248,35 @@ fun HomeScreen(
             },
             onDismiss = { showSortDialog = false }
         )
+    }
+}
+
+@Composable
+private fun HomeLastWorkoutCard(
+    workout: HomeViewModel.LastWorkoutUiState,
+    isRu: Boolean,
+    onOpen: () -> Unit,
+    onStart: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ProgramCard(
+            program = workout.program,
+            titleOverride = workout.titleOverride,
+            subtitleOverride = workout.subtitleOverride,
+            onClick = onOpen
+        )
+        FilledTonalButton(
+            onClick = onStart,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = if (isRu) {
+                    "Начать снова"
+                } else {
+                    "Start again"
+                }
+            )
+        }
     }
 }
 

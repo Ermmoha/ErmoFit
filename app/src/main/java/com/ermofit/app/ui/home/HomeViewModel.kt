@@ -2,13 +2,17 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ermofit.app.data.datastore.UserPreferencesManager
 import com.ermofit.app.data.local.entity.CategoryEntity
 import com.ermofit.app.data.local.entity.ProgramEntity
+import com.ermofit.app.data.model.CUSTOM_PROGRAM_CATEGORY_ID
 import com.ermofit.app.data.repository.LocalDataRepository
 import com.ermofit.app.data.repository.SeedRepository
+import com.ermofit.app.data.repository.CustomProgramsRepository
 import com.ermofit.app.domain.model.ResolvedProgramText
 import com.ermofit.app.domain.usecase.ExerciseTextResolver
 import com.ermofit.app.domain.usecase.ProgramTextResolver
+import com.ermofit.app.navigation.MainRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +26,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,7 +35,9 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val preferencesManager: UserPreferencesManager,
     private val localDataRepository: LocalDataRepository,
+    private val customProgramsRepository: CustomProgramsRepository,
     private val seedRepository: SeedRepository,
     exerciseTextResolver: ExerciseTextResolver,
     programTextResolver: ProgramTextResolver
@@ -126,6 +134,53 @@ class HomeViewModel @Inject constructor(
     private val _slogan = MutableStateFlow("Тренируйся стабильно и фиксируй прогресс.")
     val slogan: StateFlow<String> = _slogan.asStateFlow()
 
+    val lastWorkout: StateFlow<LastWorkoutUiState?> = preferencesManager.observeLastWorkoutShortcut()
+        .flatMapLatest { shortcut ->
+            when {
+                shortcut == null -> flowOf(null)
+                shortcut.source == MainRoutes.WorkoutSourceCustom -> {
+                    customProgramsRepository.observeProgram(shortcut.programId)
+                        .map { program ->
+                            program?.let {
+                                LastWorkoutUiState(
+                                    programId = it.id,
+                                    source = shortcut.source,
+                                    program = it.toPreviewProgram(),
+                                    titleOverride = it.title,
+                                    subtitleOverride = null
+                                )
+                            }
+                        }
+                }
+
+                else -> {
+                    combine(
+                        localDataRepository.observeProgramById(shortcut.programId),
+                        programTextResolver.observeTextForProgram(shortcut.programId)
+                    ) { program, resolvedText ->
+                        program?.let {
+                            LastWorkoutUiState(
+                                programId = it.id,
+                                source = shortcut.source.ifBlank { MainRoutes.WorkoutSourceStock },
+                                program = it,
+                                titleOverride = if (resolvedText.isFallback) {
+                                    shortcut.programTitle.ifBlank { it.title }
+                                } else {
+                                    resolvedText.title
+                                },
+                                subtitleOverride = null
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
+
     init {
         viewModelScope.launch {
             runCatching {
@@ -177,6 +232,17 @@ class HomeViewModel @Inject constructor(
         val fallbackLang: String,
         val onlyTranslated: Boolean
     )
+
+    data class LastWorkoutUiState(
+        val programId: String,
+        val source: String,
+        val program: ProgramEntity,
+        val titleOverride: String? = null,
+        val subtitleOverride: String? = null
+    ) {
+        val isCustom: Boolean
+            get() = program.categoryId == CUSTOM_PROGRAM_CATEGORY_ID
+    }
 
     private data class ProgramFilters(
         val selectedCategoryId: String?,

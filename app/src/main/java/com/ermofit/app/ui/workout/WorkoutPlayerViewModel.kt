@@ -4,10 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ermofit.app.data.datastore.UserPreferencesManager
+import com.ermofit.app.data.model.LastWorkoutShortcut
 import com.ermofit.app.data.local.relation.ProgramExerciseWithDetails
 import com.ermofit.app.data.repository.CustomProgramsRepository
 import com.ermofit.app.data.repository.FavoritesRepository
 import com.ermofit.app.data.repository.LocalDataRepository
+import com.ermofit.app.data.repository.WorkoutProgressRepository
 import com.ermofit.app.domain.model.ResolvedExerciseText
 import com.ermofit.app.domain.usecase.ExerciseTextResolver
 import com.ermofit.app.domain.usecase.ProgramTextResolver
@@ -35,13 +37,16 @@ data class WorkoutPlayerUiState(
     val exerciseTexts: Map<String, ResolvedExerciseText> = emptyMap(),
     val favoriteExerciseIds: Set<String> = emptySet(),
     val interExerciseRestSec: Int = DEFAULT_WORKOUT_INTER_EXERCISE_REST_SEC,
+    val plannedDurationMinutes: Int = 0,
     val currentIndex: Int = 0,
     val isRunning: Boolean = false,
     val mainTimerSecondsLeft: Int = 0,
     val repsRestSecondsLeft: Int = 0,
     val transitionRestSecondsLeft: Int = 0,
+    val startedAtMillis: Long = 0L,
     val showIconsHelpDialog: Boolean = false,
     val showNeverAgainInIconsHelp: Boolean = true,
+    val isFinishing: Boolean = false,
     val isFinished: Boolean = false
 )
 
@@ -52,6 +57,7 @@ class WorkoutPlayerViewModel @Inject constructor(
     private val localDataRepository: LocalDataRepository,
     private val customProgramsRepository: CustomProgramsRepository,
     private val favoritesRepository: FavoritesRepository,
+    private val workoutProgressRepository: WorkoutProgressRepository,
     private val preferencesManager: UserPreferencesManager,
     exerciseTextResolver: ExerciseTextResolver,
     programTextResolver: ProgramTextResolver
@@ -132,6 +138,12 @@ class WorkoutPlayerViewModel @Inject constructor(
     } else {
         flowOf(DEFAULT_WORKOUT_INTER_EXERCISE_REST_SEC)
     }
+    private val programDurationMinutesFlow = if (isCustomWorkout) {
+        customProgramFlow.map { it?.estimatedDurationMinutes ?: 0 }
+    } else {
+        localDataRepository.observeProgramById(programId)
+            .map { it?.durationMinutes ?: 0 }
+    }
 
     private val _uiState = MutableStateFlow(
         WorkoutPlayerUiState(
@@ -142,6 +154,7 @@ class WorkoutPlayerViewModel @Inject constructor(
             mainTimerSecondsLeft = stateHandle[KEY_MAIN_TIMER] ?: 0,
             repsRestSecondsLeft = stateHandle[KEY_REPS_REST] ?: 0,
             transitionRestSecondsLeft = stateHandle[KEY_TRANSITION_REST] ?: 0,
+            startedAtMillis = stateHandle[KEY_STARTED_AT] ?: 0L,
             isFinished = stateHandle[KEY_FINISHED] ?: false
         )
     )
@@ -153,11 +166,28 @@ class WorkoutPlayerViewModel @Inject constructor(
         viewModelScope.launch {
             programTitleFlow.collect { title ->
                 _uiState.updateAndPersist { it.copy(programTitle = title) }
+                if (title.isNotBlank()) {
+                    preferencesManager.setLastWorkoutShortcut(
+                        LastWorkoutShortcut(
+                            programId = programId,
+                            programTitle = title,
+                            source = workoutSource,
+                            updatedAt = System.currentTimeMillis()
+                        )
+                    )
+                }
             }
         }
         viewModelScope.launch {
             interExerciseRestFlow.collect { restSec ->
                 _uiState.updateAndPersist { it.copy(interExerciseRestSec = restSec.coerceAtLeast(0)) }
+            }
+        }
+        viewModelScope.launch {
+            programDurationMinutesFlow.collect { durationMinutes ->
+                _uiState.updateAndPersist {
+                    it.copy(plannedDurationMinutes = durationMinutes.coerceAtLeast(0))
+                }
             }
         }
         viewModelScope.launch {
@@ -210,11 +240,15 @@ class WorkoutPlayerViewModel @Inject constructor(
     fun startPause() {
         val state = _uiState.value
         val current = currentExercise(state) ?: return
-        if (state.isFinished) return
+        if (state.isFinished || state.isFinishing) return
 
         if (state.isRunning) {
             pauseTimer()
             return
+        }
+
+        if (state.startedAtMillis == 0L) {
+            _uiState.updateAndPersist { it.copy(startedAtMillis = System.currentTimeMillis()) }
         }
 
         if (current.defaultDurationSec > 0) {
@@ -234,6 +268,7 @@ class WorkoutPlayerViewModel @Inject constructor(
     }
 
     fun next() {
+        if (_uiState.value.isFinishing) return
         pauseTimer()
         val state = _uiState.value
         if (state.currentIndex >= state.exercises.lastIndex) {
@@ -244,19 +279,45 @@ class WorkoutPlayerViewModel @Inject constructor(
     }
 
     fun previous() {
+        if (_uiState.value.isFinishing) return
         pauseTimer()
         moveToIndex(_uiState.value.currentIndex - 1)
     }
 
     fun finish() {
+        val state = _uiState.value
+        if (state.isFinished || state.isFinishing) return
         pauseTimer()
-        _uiState.updateAndPersist {
-            it.copy(
-                isFinished = true,
+        _uiState.update { current ->
+            current.copy(
                 isRunning = false,
                 transitionRestSecondsLeft = 0,
-                repsRestSecondsLeft = 0
+                repsRestSecondsLeft = 0,
+                isFinishing = true
             )
+        }
+        viewModelScope.launch {
+            val finishedAt = System.currentTimeMillis()
+            val totalSeconds = resolveCompletedWorkoutTotalSeconds(state, finishedAt)
+            runCatching {
+                workoutProgressRepository.saveCompletedWorkout(
+                    programId = state.programId,
+                    programTitle = state.programTitle,
+                    source = workoutSource,
+                    completedExercises = state.exercises.size,
+                    totalSeconds = totalSeconds,
+                    finishedAt = finishedAt
+                )
+            }
+            _uiState.updateAndPersist {
+                it.copy(
+                    isFinished = true,
+                    isRunning = false,
+                    transitionRestSecondsLeft = 0,
+                    repsRestSecondsLeft = 0,
+                    isFinishing = false
+                )
+            }
         }
     }
 
@@ -429,7 +490,36 @@ class WorkoutPlayerViewModel @Inject constructor(
         stateHandle[KEY_REPS_REST] = state.repsRestSecondsLeft
         stateHandle[KEY_TRANSITION_REST] = state.transitionRestSecondsLeft
         stateHandle[KEY_INTER_EXERCISE_REST] = state.interExerciseRestSec
+        stateHandle[KEY_STARTED_AT] = state.startedAtMillis
         stateHandle[KEY_FINISHED] = state.isFinished
+    }
+
+    private fun resolveCompletedWorkoutTotalSeconds(
+        state: WorkoutPlayerUiState,
+        finishedAt: Long
+    ): Int {
+        val actualSeconds = if (state.startedAtMillis > 0L) {
+            ((finishedAt - state.startedAtMillis) / 1_000L).toInt().coerceAtLeast(1)
+        } else {
+            0
+        }
+        if (actualSeconds > 0) return actualSeconds
+
+        val plannedSeconds = state.plannedDurationMinutes
+            .coerceAtLeast(0)
+            .times(60)
+        if (plannedSeconds > 0) return plannedSeconds
+
+        val exerciseSeconds = state.exercises.sumOf { exercise ->
+            when {
+                exercise.defaultDurationSec > 0 -> exercise.defaultDurationSec
+                exercise.defaultReps > 0 -> DEFAULT_REPS_REST_SEC
+                else -> 0
+            }
+        }
+        val transitionSeconds = state.interExerciseRestSec
+            .coerceAtLeast(0) * (state.exercises.size - 1).coerceAtLeast(0)
+        return (exerciseSeconds + transitionSeconds).coerceAtLeast(60)
     }
 
     override fun onCleared() {
@@ -450,6 +540,7 @@ class WorkoutPlayerViewModel @Inject constructor(
         const val KEY_REPS_REST = "workout_reps_rest"
         const val KEY_TRANSITION_REST = "workout_transition_rest"
         const val KEY_INTER_EXERCISE_REST = "workout_inter_exercise_rest"
+        const val KEY_STARTED_AT = "workout_started_at"
         const val KEY_FINISHED = "workout_finished"
     }
 }
