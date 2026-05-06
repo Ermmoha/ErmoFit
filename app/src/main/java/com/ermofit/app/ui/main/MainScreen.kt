@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
@@ -40,6 +41,7 @@ import androidx.navigation.navArgument
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ermofit.app.navigation.MainRoutes
+import com.ermofit.app.ui.about.AboutScreen
 import com.ermofit.app.ui.customprogram.CustomProgramDetailsViewModel
 import com.ermofit.app.ui.i18n.AppStrings
 import com.ermofit.app.ui.i18n.appLanguage
@@ -54,6 +56,12 @@ import com.ermofit.app.ui.customprogram.CustomProgramBuilderScreen
 import com.ermofit.app.ui.customprogram.CustomProgramDetailsScreen
 import com.ermofit.app.ui.search.SearchScreen
 import com.ermofit.app.ui.workout.WorkoutPlayerScreen
+
+private data class MainTab(
+    val route: String,
+    val label: String,
+    val icon: ImageVector
+)
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +93,12 @@ fun MainScreen(
         MainRoutes.Home,
         MainRoutes.Exercises,
         MainRoutes.Profile
+    )
+    val rootTabs = listOf(
+        MainTab(MainRoutes.Favorites, strings.tabFavorites, Icons.Default.Favorite),
+        MainTab(MainRoutes.Home, strings.tabHome, Icons.Default.Home),
+        MainTab(MainRoutes.Exercises, strings.exercisesLabel, Icons.Default.FitnessCenter),
+        MainTab(MainRoutes.Profile, strings.tabProfile, Icons.Default.Person)
     )
 
     Scaffold(
@@ -162,86 +176,22 @@ fun MainScreen(
         bottomBar = {
             if (isRootTab) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    NavigationBarItem(
-                        selected = route == MainRoutes.Favorites,
-                        onClick = {
-                            navController.navigate(MainRoutes.Favorites) {
-                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
+                    rootTabs.forEach { tab ->
+                        NavigationBarItem(
+                            selected = route == tab.route,
+                            onClick = { navController.navigateToRootTab(tab.route) },
+                            icon = { Icon(tab.icon, contentDescription = tab.label) },
+                            label = {
+                                Text(
+                                    text = tab.label,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 10.sp
+                                )
                             }
-                        },
-                        icon = { Icon(Icons.Default.Favorite, contentDescription = strings.tabFavorites) },
-                        label = {
-                            Text(
-                                text = strings.tabFavorites,
-                                maxLines = 1,
-                                softWrap = false,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 10.sp
-                            )
-                        }
-                    )
-                    NavigationBarItem(
-                        selected = route == MainRoutes.Home,
-                        onClick = {
-                            navController.navigate(MainRoutes.Home) {
-                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(Icons.Default.Home, contentDescription = strings.tabHome) },
-                        label = {
-                            Text(
-                                text = strings.tabHome,
-                                maxLines = 1,
-                                softWrap = false,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 10.sp
-                            )
-                        }
-                    )
-                    NavigationBarItem(
-                        selected = route == MainRoutes.Exercises,
-                        onClick = {
-                            navController.navigate(MainRoutes.Exercises) {
-                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(Icons.Default.FitnessCenter, contentDescription = strings.exercisesLabel) },
-                        label = {
-                            Text(
-                                text = strings.exercisesLabel,
-                                maxLines = 1,
-                                softWrap = false,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 10.sp
-                            )
-                        }
-                    )
-                    NavigationBarItem(
-                        selected = route == MainRoutes.Profile,
-                        onClick = {
-                            navController.navigate(MainRoutes.Profile) {
-                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(Icons.Default.Person, contentDescription = strings.tabProfile) },
-                        label = {
-                            Text(
-                                text = strings.tabProfile,
-                                maxLines = 1,
-                                softWrap = false,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 10.sp
-                            )
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -287,7 +237,13 @@ fun MainScreen(
                 )
             }
             composable(MainRoutes.Profile) {
-                ProfileScreen(onLoggedOut = onLogoutToWelcome)
+                ProfileScreen(
+                    onLoggedOut = onLogoutToWelcome,
+                    onAboutClick = { navController.navigate(MainRoutes.About) }
+                )
+            }
+            composable(MainRoutes.About) {
+                AboutScreen()
             }
             composable(MainRoutes.Exercises) {
                 ExercisesScreen(
@@ -417,6 +373,7 @@ private fun topBarTitle(route: String, strings: AppStrings): String {
         route == MainRoutes.Home -> strings.topHome
         route == MainRoutes.Favorites -> strings.topFavorites
         route == MainRoutes.Profile -> strings.topProfile
+        route == MainRoutes.About -> strings.topAbout
         route == MainRoutes.Exercises -> strings.exercisesLabel
         route == MainRoutes.Search -> strings.topSearch
         route == MainRoutes.CreateCustomProgram -> strings.topCreateProgram
@@ -426,6 +383,14 @@ private fun topBarTitle(route: String, strings: AppStrings): String {
         route.startsWith("exercise/") -> strings.topExerciseDetails
         route.startsWith("workout/") -> strings.topWorkout
         else -> strings.appName
+    }
+}
+
+private fun androidx.navigation.NavHostController.navigateToRootTab(route: String) {
+    navigate(route) {
+        popUpTo(graph.startDestinationId) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }
 

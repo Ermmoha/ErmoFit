@@ -26,9 +26,6 @@ interface FitnessDao {
     suspend fun insertExerciseTexts(items: List<ExerciseTextEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertExerciseText(item: ExerciseTextEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPrograms(items: List<ProgramEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -39,12 +36,6 @@ interface FitnessDao {
 
     @Query("SELECT COUNT(*) FROM programs")
     suspend fun getProgramsCount(): Int
-
-    @Query("SELECT EXISTS(SELECT 1 FROM exercises WHERE id = :exerciseId)")
-    suspend fun hasExercise(exerciseId: String): Boolean
-
-    @Query("SELECT * FROM categories ORDER BY title ASC")
-    fun observeCategories(): Flow<List<CategoryEntity>>
 
     @Query(
         """
@@ -91,57 +82,11 @@ interface FitnessDao {
         onlyTranslated: Boolean
     ): Flow<List<CategoryEntity>>
 
-    @Query(
-        """
-        SELECT p.*
-        FROM programs p
-        LEFT JOIN program_texts tp
-          ON tp.programId = p.id AND tp.langCode = :langCode
-        WHERE EXISTS (
-            SELECT 1
-            FROM program_exercises pe
-            WHERE pe.programId = p.id
-        )
-        AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
-        ORDER BY COALESCE(NULLIF(tp.title, ''), p.title) ASC, p.id ASC
-        LIMIT :limit
-        """
-    )
-    fun getProgramsRecommendedLocalized(
-        limit: Int,
-        langCode: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ProgramEntity>>
-
-    @Query(
-        """
-        SELECT p.*
-        FROM programs p
-        LEFT JOIN program_texts tp
-          ON tp.programId = p.id AND tp.langCode = :langCode
-        WHERE EXISTS (
-            SELECT 1 FROM program_exercises pe
-            WHERE pe.programId = p.id
-        )
-        AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
-        ORDER BY COALESCE(NULLIF(tp.title, ''), p.title) ASC, p.id ASC
-        LIMIT :limit
-        """
-    )
-    fun getProgramsRecommendedStrictLocalized(
-        limit: Int,
-        langCode: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ProgramEntity>>
-
     @Query("SELECT * FROM programs WHERE id = :programId LIMIT 1")
     fun getProgramById(programId: String): Flow<ProgramEntity?>
 
     @Query("SELECT * FROM exercises WHERE id = :exerciseId LIMIT 1")
     fun getExerciseById(exerciseId: String): Flow<ExerciseEntity?>
-
-    @Query("SELECT * FROM exercises WHERE id = :exerciseId LIMIT 1")
-    suspend fun getExerciseByIdOnce(exerciseId: String): ExerciseEntity?
 
     @Query(
         """
@@ -313,69 +258,6 @@ interface FitnessDao {
 
     @Query(
         """
-        SELECT e.*
-        FROM exercises e
-        LEFT JOIN exercise_texts tp
-          ON tp.exerciseId = e.id AND tp.langCode = :preferredLang
-        LEFT JOIN exercise_texts tf
-          ON tf.exerciseId = e.id AND tf.langCode = :fallbackLang
-        WHERE e.mediaType = 'VIDEO'
-          AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
-          AND (
-            e.tags LIKE '%' || :query || '%'
-            OR COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) LIKE '%' || :query || '%'
-          )
-        ORDER BY COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) ASC
-        """
-    )
-    fun searchExercisesWithVideoLocalizedFiltered(
-        query: String,
-        preferredLang: String,
-        fallbackLang: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ExerciseEntity>>
-
-    @Query(
-        """
-        SELECT p.*
-        FROM programs p
-        LEFT JOIN program_texts tp
-          ON tp.programId = p.id AND tp.langCode = :langCode
-        WHERE p.categoryId = :categoryId
-          AND EXISTS (
-            SELECT 1
-            FROM program_exercises pe
-            WHERE pe.programId = p.id
-          )
-          AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
-        ORDER BY COALESCE(NULLIF(tp.title, ''), p.title) ASC
-        """
-    )
-    fun getProgramsByCategoryLocalized(
-        categoryId: String,
-        langCode: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ProgramEntity>>
-
-    @Query(
-        """
-        SELECT e.*
-        FROM exercises e
-        LEFT JOIN exercise_texts tp
-          ON tp.exerciseId = e.id AND tp.langCode = :langCode
-        WHERE e.categoryId = :categoryId
-          AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
-        ORDER BY COALESCE(NULLIF(tp.name, ''), e.title) ASC
-        """
-    )
-    fun getExercisesByCategoryLocalized(
-        categoryId: String,
-        langCode: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ExerciseEntity>>
-
-    @Query(
-        """
         SELECT p.*
         FROM programs p
         LEFT JOIN program_texts tp
@@ -416,26 +298,14 @@ interface FitnessDao {
     @Query("DELETE FROM program_exercises")
     suspend fun clearProgramExercises()
 
-    @Query("DELETE FROM program_exercises WHERE programId IN (:programIds)")
-    suspend fun clearProgramExercisesForPrograms(programIds: List<String>)
-
-    @Query("DELETE FROM program_exercises WHERE programId LIKE 'web_%'")
-    suspend fun clearExternalProgramExercises()
-
     @Query("DELETE FROM program_texts")
     suspend fun clearProgramTexts()
 
     @Query("DELETE FROM programs")
     suspend fun clearPrograms()
 
-    @Query("DELETE FROM programs WHERE id LIKE 'web_%'")
-    suspend fun clearExternalPrograms()
-
     @Query("DELETE FROM exercises")
     suspend fun clearExercises()
-
-    @Query("DELETE FROM exercises WHERE id LIKE 'ext_%'")
-    suspend fun clearExternalExercises()
 
     @Query("DELETE FROM exercise_texts")
     suspend fun clearExerciseTexts()

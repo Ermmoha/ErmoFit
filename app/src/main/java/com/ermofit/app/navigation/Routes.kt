@@ -14,6 +14,7 @@ object MainRoutes {
     const val Home = "home"
     const val Exercises = "exercises"
     const val Profile = "profile"
+    const val About = "about"
     const val Search = "search"
     const val CreateCustomProgram = "custom-programs/create"
     const val EditCustomProgram = "custom-programs/{programId}/edit"

@@ -16,27 +16,11 @@ import kotlinx.coroutines.flow.flowOf
 class LocalDataRepository @Inject constructor(
     private val dao: FitnessDao
 ) {
-    fun observeRecommendedPrograms(
-        limit: Int = 6,
-        strictVideoMode: Boolean = true,
-        langCode: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ProgramEntity>> {
-        return if (strictVideoMode) {
-            dao.getProgramsRecommendedStrictLocalized(limit, langCode, onlyTranslated)
-        } else {
-            dao.getProgramsRecommendedLocalized(limit, langCode, onlyTranslated)
-        }
-    }
-
     fun observeProgramById(programId: String): Flow<ProgramEntity?> =
         dao.getProgramById(programId)
 
     fun observeExerciseById(exerciseId: String): Flow<ExerciseEntity?> =
         dao.getExerciseById(exerciseId)
-
-    suspend fun getExerciseByIdOnce(exerciseId: String): ExerciseEntity? =
-        dao.getExerciseByIdOnce(exerciseId)
 
     fun observeExerciseText(
         exerciseId: String,
@@ -92,34 +76,8 @@ class LocalDataRepository @Inject constructor(
         langCode = langCode
     )
 
-    suspend fun upsertExerciseText(item: ExerciseTextEntity) {
-        dao.upsertExerciseText(item)
-    }
-
     fun observeExercisesForProgram(programId: String): Flow<List<ProgramExerciseWithDetails>> =
         dao.getExercisesForProgram(programId)
-
-    fun observeProgramsByCategory(
-        categoryId: String,
-        langCode: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ProgramEntity>> = dao.getProgramsByCategoryLocalized(
-        categoryId = categoryId,
-        langCode = langCode,
-        onlyTranslated = onlyTranslated
-    )
-
-    fun observeExercisesByCategory(
-        categoryId: String,
-        langCode: String,
-        onlyTranslated: Boolean
-    ): Flow<List<ExerciseEntity>> = dao.getExercisesByCategoryLocalized(
-        categoryId = categoryId,
-        langCode = langCode,
-        onlyTranslated = onlyTranslated
-    )
-
-    fun observeCategories(): Flow<List<CategoryEntity>> = dao.observeCategories()
 
     fun observeProgramCategories(
         langCode: String,

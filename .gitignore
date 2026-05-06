@@ -1,6 +1,9 @@
 *.iml
 .gradle
+.gradle-user/
+.android/
 /local.properties
+/.idea/
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -12,3 +15,8 @@
 .externalNativeBuild
 .cxx
 app/build
+bd_en.json
+bd_ru.json
+info.txt
+plan.txt
+диплом Воронова — копия.docx

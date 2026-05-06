@@ -48,6 +48,7 @@ import com.ermofit.app.ui.i18n.appStrings
 @Composable
 fun ProfileScreen(
     onLoggedOut: () -> Unit,
+    onAboutClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val strings = appStrings()
@@ -267,6 +268,15 @@ fun ProfileScreen(
                             )
                         }
                     }
+                }
+            }
+
+            item {
+                OutlinedButton(
+                    onClick = onAboutClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(strings.profileAboutApp)
                 }
             }
 
