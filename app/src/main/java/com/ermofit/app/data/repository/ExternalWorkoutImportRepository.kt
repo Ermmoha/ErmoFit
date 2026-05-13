@@ -6,7 +6,9 @@ import androidx.room.withTransaction
 import com.ermofit.app.data.datastore.UserPreferencesManager
 import com.ermofit.app.data.local.AppDatabase
 import com.ermofit.app.data.local.entity.CategoryEntity
+import com.ermofit.app.data.local.entity.CategoryTextEntity
 import com.ermofit.app.data.local.entity.ExerciseEntity
+import com.ermofit.app.data.local.entity.ExerciseTagEntity
 import com.ermofit.app.data.local.entity.ExerciseTextEntity
 import com.ermofit.app.data.local.entity.ProgramEntity
 import com.ermofit.app.data.local.entity.ProgramExerciseEntity
@@ -59,12 +61,16 @@ class ExternalWorkoutImportRepository @Inject constructor(
             dao.clearProgramExercises()
             dao.clearProgramTexts()
             dao.clearPrograms()
+            dao.clearExerciseTags()
             dao.clearExerciseTexts()
             dao.clearExercises()
+            dao.clearCategoryTexts()
             dao.clearCategories()
 
             dao.insertCategories(bundle.categories)
+            dao.insertCategoryTexts(bundle.categoryTexts)
             dao.insertExercises(bundle.exercises)
+            dao.insertExerciseTags(bundle.exerciseTags)
             dao.insertExerciseTexts(bundle.exerciseTexts)
             dao.insertPrograms(bundle.programs)
             dao.insertProgramTexts(bundle.programTexts)
@@ -90,6 +96,7 @@ class ExternalWorkoutImportRepository @Inject constructor(
 
         val now = System.currentTimeMillis()
         val exercises = mutableListOf<ExerciseEntity>()
+        val exerciseTags = mutableListOf<ExerciseTagEntity>()
         val exerciseTexts = mutableListOf<ExerciseTextEntity>()
 
         val categoryTitleRu = linkedMapOf<String, String>()
@@ -158,6 +165,12 @@ class ExternalWorkoutImportRepository @Inject constructor(
                 en = en,
                 canonicalCategory = canonicalCategory
             )
+            exerciseTags += tags.map { tag ->
+                ExerciseTagEntity(
+                    exerciseId = normalizedId,
+                    tag = tag
+                )
+            }
 
             exercises += ExerciseEntity(
                 id = normalizedId,
@@ -218,6 +231,12 @@ class ExternalWorkoutImportRepository @Inject constructor(
             }
         val categories = (exerciseCategories + programCategories(preferredLangCode))
             .distinctBy { it.id }
+        val categoryTexts = buildCategoryTexts(
+            categories = categories,
+            categoryTitleRu = categoryTitleRu,
+            categoryTitleEn = categoryTitleEn,
+            now = now
+        )
 
         val programSeed = buildCuratedProgramSeed(
             preferredLangCode = preferredLangCode,
@@ -228,7 +247,9 @@ class ExternalWorkoutImportRepository @Inject constructor(
 
         return ImportBundle(
             categories = categories,
+            categoryTexts = categoryTexts,
             exercises = exercises,
+            exerciseTags = exerciseTags.distinct(),
             exerciseTexts = exerciseTexts,
             programs = programSeed.programs,
             programTexts = programSeed.programTexts,
@@ -331,6 +352,56 @@ class ExternalWorkoutImportRepository @Inject constructor(
                 imageUrl = null
             )
         )
+    }
+
+    private fun buildCategoryTexts(
+        categories: List<CategoryEntity>,
+        categoryTitleRu: Map<String, String>,
+        categoryTitleEn: Map<String, String>,
+        now: Long
+    ): List<CategoryTextEntity> {
+        return categories.flatMap { category ->
+            val ruTitle = categoryTitleRu[category.id]
+                ?: programCategoryTitleRu(category.id)
+                ?: category.title
+            val enTitle = categoryTitleEn[category.id]
+                ?: programCategoryTitleEn(category.id)
+                ?: category.title
+            listOf(
+                CategoryTextEntity(
+                    categoryId = category.id,
+                    langCode = "ru",
+                    title = ruTitle,
+                    source = TEXT_SOURCE_FILE,
+                    updatedAt = now
+                ),
+                CategoryTextEntity(
+                    categoryId = category.id,
+                    langCode = "en",
+                    title = enTitle,
+                    source = TEXT_SOURCE_FILE,
+                    updatedAt = now
+                )
+            )
+        }
+    }
+
+    private fun programCategoryTitleRu(categoryId: String): String? {
+        return when (categoryId) {
+            CAT_HOME -> "\u0414\u043e\u043c"
+            CAT_GYM -> "\u0417\u0430\u043b"
+            CAT_OUTDOOR -> "\u0423\u043b\u0438\u0446\u0430"
+            else -> null
+        }
+    }
+
+    private fun programCategoryTitleEn(categoryId: String): String? {
+        return when (categoryId) {
+            CAT_HOME -> "Home"
+            CAT_GYM -> "Gym"
+            CAT_OUTDOOR -> "Outdoor"
+            else -> null
+        }
     }
 
     private fun curatedProgramTemplates(): List<CuratedProgramTemplate> {
@@ -901,7 +972,9 @@ class ExternalWorkoutImportRepository @Inject constructor(
 
     private data class ImportBundle(
         val categories: List<CategoryEntity>,
+        val categoryTexts: List<CategoryTextEntity>,
         val exercises: List<ExerciseEntity>,
+        val exerciseTags: List<ExerciseTagEntity>,
         val exerciseTexts: List<ExerciseTextEntity>,
         val programs: List<ProgramEntity>,
         val programTexts: List<ProgramTextEntity>,
@@ -911,7 +984,7 @@ class ExternalWorkoutImportRepository @Inject constructor(
     private companion object {
         const val RU_ASSET = "bd_ru.json"
         const val EN_ASSET = "bd_en.json"
-        const val BASE_IMPORT_VERSION = 38
+        const val BASE_IMPORT_VERSION = 39
         const val MIN_CURATED_EXERCISES_PER_PROGRAM = 4
         const val CAT_HOME = "cat_program_home"
         const val CAT_GYM = "cat_program_gym"

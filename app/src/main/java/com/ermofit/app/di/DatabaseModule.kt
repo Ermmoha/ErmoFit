@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import com.ermofit.app.data.local.AppDatabase
 import com.ermofit.app.data.local.dao.FitnessDao
-import com.ermofit.app.newplan.data.local.dao.NewPlanDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +29,4 @@ object DatabaseModule {
 
     @Provides
     fun provideFitnessDao(database: AppDatabase): FitnessDao = database.fitnessDao()
-
-    @Provides
-    fun provideNewPlanDao(database: AppDatabase): NewPlanDao = database.newPlanDao()
 }

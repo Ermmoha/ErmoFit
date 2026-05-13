@@ -5,8 +5,11 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.ermofit.app.data.local.entity.CategoryEntity
+import com.ermofit.app.data.local.entity.CategoryTextEntity
 import com.ermofit.app.data.local.entity.ExerciseEntity
+import com.ermofit.app.data.local.entity.ExerciseTagEntity
 import com.ermofit.app.data.local.entity.ExerciseTextEntity
+import com.ermofit.app.data.local.entity.FavoriteEntity
 import com.ermofit.app.data.local.entity.ProgramEntity
 import com.ermofit.app.data.local.entity.ProgramExerciseEntity
 import com.ermofit.app.data.local.entity.ProgramTextEntity
@@ -20,7 +23,13 @@ interface FitnessDao {
     suspend fun insertCategories(items: List<CategoryEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCategoryTexts(items: List<CategoryTextEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercises(items: List<ExerciseEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExerciseTags(items: List<ExerciseTagEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExerciseTexts(items: List<ExerciseTextEntity>)
@@ -34,13 +43,27 @@ interface FitnessDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProgramExercises(items: List<ProgramExerciseEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertFavorite(item: FavoriteEntity)
+
     @Query("SELECT COUNT(*) FROM programs")
     suspend fun getProgramsCount(): Int
+
+    @Query("SELECT * FROM favorites WHERE type = :type ORDER BY id ASC")
+    fun observeFavoritesByType(type: String): Flow<List<FavoriteEntity>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE id = :id AND type = :type)")
+    suspend fun isFavorite(id: String, type: String): Boolean
+
+    @Query("DELETE FROM favorites WHERE id = :id AND type = :type")
+    suspend fun removeFavorite(id: String, type: String)
 
     @Query(
         """
         SELECT c.*
         FROM categories c
+        LEFT JOIN category_texts ct
+          ON ct.categoryId = c.id AND ct.langCode = :langCode
         WHERE EXISTS (
             SELECT 1
             FROM programs p
@@ -52,9 +75,9 @@ interface FitnessDao {
                 FROM program_exercises pe
                 WHERE pe.programId = p.id
               )
-              AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
+              AND (:onlyTranslated = 0 OR tp.programId IS NOT NULL)
         )
-        ORDER BY c.title ASC
+        ORDER BY COALESCE(NULLIF(ct.title, ''), c.title) ASC
         """
     )
     fun observeProgramCategoriesLocalized(
@@ -66,15 +89,17 @@ interface FitnessDao {
         """
         SELECT c.*
         FROM categories c
+        LEFT JOIN category_texts ct
+          ON ct.categoryId = c.id AND ct.langCode = :langCode
         WHERE EXISTS (
             SELECT 1
             FROM exercises e
             LEFT JOIN exercise_texts te
               ON te.exerciseId = e.id AND te.langCode = :langCode
             WHERE e.categoryId = c.id
-              AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
+              AND (:onlyTranslated = 0 OR te.exerciseId IS NOT NULL)
         )
-        ORDER BY c.title ASC
+        ORDER BY COALESCE(NULLIF(ct.title, ''), c.title) ASC
         """
     )
     fun observeExerciseCategoriesLocalized(
@@ -212,15 +237,16 @@ interface FitnessDao {
             FROM program_exercises pe
             WHERE pe.programId = p.id
         )
-          AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
+          AND (:onlyTranslated = 0 OR tp.programId IS NOT NULL)
           AND (
             COALESCE(NULLIF(tp.title, ''), NULLIF(tf.title, ''), p.title) LIKE '%' || :query || '%'
             OR EXISTS (
                 SELECT 1
                 FROM program_exercises pe2
                 INNER JOIN exercises e2 ON e2.id = pe2.exerciseId
+                INNER JOIN exercise_tags et2 ON et2.exerciseId = e2.id
                 WHERE pe2.programId = p.id
-                  AND e2.tags LIKE '%' || :query || '%'
+                  AND et2.tag LIKE '%' || :query || '%'
             )
           )
         ORDER BY COALESCE(NULLIF(tp.title, ''), NULLIF(tf.title, ''), p.title) ASC
@@ -241,9 +267,14 @@ interface FitnessDao {
           ON tp.exerciseId = e.id AND tp.langCode = :preferredLang
         LEFT JOIN exercise_texts tf
           ON tf.exerciseId = e.id AND tf.langCode = :fallbackLang
-        WHERE (:onlyTranslated = 0 OR :onlyTranslated = 1)
+        WHERE (:onlyTranslated = 0 OR tp.exerciseId IS NOT NULL)
           AND (
-            e.tags LIKE '%' || :query || '%'
+            EXISTS (
+                SELECT 1
+                FROM exercise_tags et
+                WHERE et.exerciseId = e.id
+                  AND et.tag LIKE '%' || :query || '%'
+            )
             OR COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) LIKE '%' || :query || '%'
           )
         ORDER BY COALESCE(NULLIF(tp.name, ''), NULLIF(tf.name, ''), e.title) ASC
@@ -268,7 +299,7 @@ interface FitnessDao {
             FROM program_exercises pe
             WHERE pe.programId = p.id
           )
-          AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
+          AND (:onlyTranslated = 0 OR tp.programId IS NOT NULL)
         ORDER BY COALESCE(NULLIF(tp.title, ''), p.title) ASC
         """
     )
@@ -285,7 +316,7 @@ interface FitnessDao {
         LEFT JOIN exercise_texts tp
           ON tp.exerciseId = e.id AND tp.langCode = :langCode
         WHERE e.id IN (:ids)
-          AND (:onlyTranslated = 0 OR :onlyTranslated = 1)
+          AND (:onlyTranslated = 0 OR tp.exerciseId IS NOT NULL)
         ORDER BY COALESCE(NULLIF(tp.name, ''), e.title) ASC
         """
     )
@@ -307,8 +338,14 @@ interface FitnessDao {
     @Query("DELETE FROM exercises")
     suspend fun clearExercises()
 
+    @Query("DELETE FROM exercise_tags")
+    suspend fun clearExerciseTags()
+
     @Query("DELETE FROM exercise_texts")
     suspend fun clearExerciseTexts()
+
+    @Query("DELETE FROM category_texts")
+    suspend fun clearCategoryTexts()
 
     @Query("DELETE FROM categories")
     suspend fun clearCategories()

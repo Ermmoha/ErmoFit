@@ -1,8 +1,8 @@
 package com.ermofit.app.data.repository
 
+import com.ermofit.app.data.local.dao.FitnessDao
+import com.ermofit.app.data.local.entity.FavoriteEntity
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ermofit.app.newplan.data.local.dao.NewPlanDao
-import com.ermofit.app.newplan.data.local.entity.FavoriteEntity
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,7 +16,7 @@ import kotlinx.coroutines.tasks.await
 @OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
 class FavoritesRepository @Inject constructor(
-    private val dao: NewPlanDao,
+    private val dao: FitnessDao,
     private val firestore: FirebaseFirestore,
     private val authRepository: AuthRepository
 ) {
